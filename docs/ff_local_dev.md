@@ -1,0 +1,47 @@
+# FireFoundry Local Development Guide
+
+> **This guide has been restructured for better navigation!**
+>
+> The content has been broken down into focused, modular guides. This main file now serves as an index to help you find the information you need quickly.
+
+## Quick Start
+
+If you're new to FireFoundry, follow these guides in order:
+
+1. **[Prerequisites](ff_local_dev/01-prerequisites.md)** - Install Docker, minikube, and core tools
+2. **[Architecture Overview](ff_local_dev/02-architecture.md)** - Understand the system design
+3. **[Environment Setup](ff_local_dev/03-environment-setup.md)** - Configure your local development environment
+4. **[Deploy Services](ff_local_dev/04-deployment.md)** - Deploy FireFoundry infrastructure
+5. **[FireFoundry CLI Setup](ff_local_dev/05-ff-cli-setup.md)** - Install the CLI for agent development (requires GitHub token)
+6. **[Agent Development](ff_local_dev/06-agent-development.md)** - Create your first agent bundle
+
+## Reference Guides
+
+- **[Operations & Maintenance](ff_local_dev/07-operations.md)** - Monitoring, debugging, and updates
+- **[Troubleshooting](ff_local_dev/08-troubleshooting.md)** - Common issues and solutions
+
+## What is FireFoundry?
+
+FireFoundry is a comprehensive platform for building and deploying AI agents that can interact with various services, manage context, and execute code safely. FireFoundry deploys into Kubernetes for compatibility with multiple cloud comput providers.
+
+### Key Benefits
+
+- **Modularity**: Each agent handles specific domain responsibilities
+- **Reusability**: Agent bundles can be composed into larger systems
+- **Testability**: Individual agents can be tested in isolation
+- **Maintainability**: Clear boundaries make debugging and updates easier
+- **Scalability**: Independent scaling of runtime and control plane services
+
+## Getting Help
+
+- **Documentation**: Check the Agent SDK docs included in generated projects
+- **Logs**: Always check pod logs first when troubleshooting
+- **Community**: Internal Teams channels and team knowledge sharing
+- **Support**: Reach out to the FireFoundry platform team for infrastructure issues:
+  - **Doug**: doug@firebrand.ai
+  - **Augustus**: augustus@firebrand.ai
+  - **Jose**: jose@firebrand.ai
+
+---
+
+> **Tip**: Each guide is self-contained but includes cross-references to related topics. Start with the [Prerequisites](ff_local_dev/01-prerequisites.md) guide and work your way through the numbered sequence for the best experience.
