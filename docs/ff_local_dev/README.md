@@ -10,12 +10,13 @@ If you're new to FireFoundry, follow these guides in order:
 2. **[Architecture Overview](02-architecture.md)** - Understand the system design
 3. **[Environment Setup](03-environment-setup.md)** - Configure your local development environment
 4. **[Deploy Services](04-deployment.md)** - Deploy FireFoundry infrastructure
-5. **[Agent Development](05-agent-development.md)** - Create your first agent bundle
+5. **[FireFoundry CLI Setup](05-ff-cli-setup.md)** - Install the CLI for agent development (requires GitHub token)
+6. **[Agent Development](06-agent-development.md)** - Create your first agent bundle
 
 ## Reference Guides
 
-- **[Operations & Maintenance](06-operations.md)** - Monitoring, debugging, and updates
-- **[Troubleshooting](07-troubleshooting.md)** - Common issues and solutions
+- **[Operations & Maintenance](07-operations.md)** - Monitoring, debugging, and updates
+- **[Troubleshooting](08-troubleshooting.md)** - Common issues and solutions
 
 ## What is FireFoundry?
 

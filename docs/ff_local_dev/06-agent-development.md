@@ -227,5 +227,5 @@ FireFoundry includes AI pair programming support through Cursor integration:
 
 Now that you can create agent bundles, learn about:
 
-1. **[Operations & Maintenance](06-operations.md)** - Monitor and maintain your deployments
-2. **[Troubleshooting](07-troubleshooting.md)** - Solve common issues
+1. **[Operations & Maintenance](07-operations.md)** - Monitor and maintain your deployments
+2. **[Troubleshooting](08-troubleshooting.md)** - Solve common issues
