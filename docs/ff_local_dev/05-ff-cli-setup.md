@@ -19,7 +19,7 @@ Before setting up the FireFoundry CLI, ensure you have completed:
 
 **If you don't have a Firebrand GitHub account:**
 
-- Request a token from doug@firebrand.ai or augustus@firebrand.ai
+- Contact your FireBrand sales representative to request access
 
 ## Step 2: Configure NPM for Private Packages
 
