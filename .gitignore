@@ -1,0 +1,237 @@
+# Local Development Documentation - .gitignore
+
+# ===================================
+# SECRETS AND SENSITIVE FILES
+# ===================================
+# Never commit actual secrets or credentials
+secrets.yaml
+secrets.yml
+**/secrets.yaml
+**/secrets.yml
+*.secret
+*.secrets
+.env
+.env.local
+.env.production
+.env.staging
+.env.development
+*.key
+*.pem
+*.p12
+*.pfx
+kubeconfig*
+*.kubeconfig
+
+# API Keys and Tokens
+**/api-keys/
+**/credentials/
+github-token.txt
+*-token.txt
+*-credentials.*
+
+# ===================================
+# MACOS SYSTEM FILES
+# ===================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ===================================
+# EDITOR AND IDE FILES
+# ===================================
+# VS Code
+.vscode/
+*.code-workspace
+
+# Cursor
+.cursor/
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Vim
+*.swp
+*.swo
+*~
+.viminfo
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ===================================
+# TEMPORARY AND BUILD FILES
+# ===================================
+# Temporary files
+*.tmp
+*.temp
+*.cache
+.cache/
+temp/
+tmp/
+
+# Log files
+*.log
+logs/
+*.log.*
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# ===================================
+# KUBERNETES AND DOCKER
+# ===================================
+# Kubernetes configs with secrets
+**/kube-config
+**/kubectl-config
+minikube-*.yaml
+
+# Docker
+.docker/
+docker-compose.override.yml
+docker-compose.override.yaml
+
+# Helm
+*.tgz
+charts/*.lock
+**/Chart.lock
+
+# ===================================
+# NODE.JS AND NPM
+# ===================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+.npmrc
+
+# ===================================
+# PYTHON
+# ===================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# ===================================
+# ZIP FILES AND DISTRIBUTIONS
+# ===================================
+# Configuration packages that might contain secrets
+ff-dev-config.zip
+*-config.zip
+config-*.zip
+deployment-*.zip
+
+# Distribution archives
+*.zip
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.7z
+*.rar
+
+# ===================================
+# LOCAL DEVELOPMENT OVERRIDES
+# ===================================
+# Local configuration overrides
+*.local.yaml
+*.local.yml
+*-local.yaml
+*-local.yml
+values.local.*
+config.local.*
+
+# Personal development notes
+TODO.md
+NOTES.md
+PERSONAL.md
+personal/
+notes/
+
+# Testing and experimental files
+test-*
+experimental/
+sandbox/
+scratch/
+
+# ===================================
+# CUSTOM CONFIGURATION FILES
+# ===================================
+# Any files ending in .local (local overrides)
+*.local
+
+# Custom environment files
+custom-env.*
+local-env.*
+
+# Generated documentation
+generated/
+auto-generated/
+
+# ===================================
+# MISCELLANEOUS
+# ===================================
+# Thumbnails
+*.thumbnail
+
+# Files that might contain URLs, IPs, or other sensitive info
+hosts.txt
+urls.txt
+endpoints.txt
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Core dumps
+core.*
+
+doug/
