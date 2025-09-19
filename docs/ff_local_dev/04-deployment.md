@@ -25,7 +25,29 @@ cd ff-dev-config
 
 **Important**: All deployment commands in this guide assume you're working from the directory containing these configuration files.
 
-## Step 1: Container Registry Access
+## Step 1: Create Namespaces
+
+FireFoundry uses two separate namespaces for clear separation of concerns. Create them first before setting up any services:
+
+```bash
+# Create the core runtime services namespace
+kubectl create namespace ff-dev
+
+# Create the control plane services namespace
+kubectl create namespace ff-control-plane
+
+# Verify namespaces were created
+kubectl get namespaces | grep ff-
+```
+
+**Why separate namespaces?**
+
+- **ff-dev**: Contains core AI services (FF Broker, Context Service, Code Sandbox)
+- **ff-control-plane**: Contains infrastructure services (PostgreSQL, Concourse, Harbor, FF Console)
+- **Isolation**: Separate resource management, security policies, and monitoring
+- **Organization**: Clear separation makes troubleshooting and maintenance easier
+
+## Step 2: Container Registry Access
 
 FireFoundry uses a private Azure Container Registry for security and control. Here's how to set it up:
 
@@ -59,7 +81,7 @@ kubectl create secret docker-registry myregistrycreds \
 - **Security scanning**: Automated vulnerability detection in container images
 - **Compliance**: Meets enterprise security requirements for AI workloads
 
-## Step 2: Add FireFoundry Helm Repository
+## Step 3: Add FireFoundry Helm Repository
 
 Add the published FireFoundry charts to your Helm repositories:
 
@@ -77,26 +99,6 @@ helm search repo firebrandanalytics
 - **firefoundry-control-plane**: Infrastructure services (PostgreSQL, Concourse, Harbor, FF Console)
 - **firefoundry-core**: Core AI services (FF Broker, Context Service, Code Sandbox)
 
-## Step 3: Create Namespaces
-
-FireFoundry uses two separate namespaces for clear separation of concerns. You can create them manually or let Helm create them automatically:
-
-**Option 1: Manual namespace creation (recommended for clarity)**
-
-```bash
-# Create the core runtime services namespace
-kubectl create namespace ff-dev
-
-# Create the control plane services namespace
-kubectl create namespace ff-control-plane
-
-# Verify namespaces were created
-kubectl get namespaces | grep ff-
-```
-
-**Option 2: Let Helm create namespaces automatically**
-The Helm commands below include `--create-namespace` flags that will create the namespaces if they don't exist.
-
 ## Step 4: Deploy FireFoundry Services
 
 Deploy both the control plane and core services using the published charts. For local development, you'll need both to get the complete FireFoundry experience.
@@ -109,8 +111,7 @@ First, deploy the infrastructure services (PostgreSQL, Concourse, Harbor, FF Con
 # Deploy control plane services
 helm install firefoundry-control firebrandanalytics/firefoundry-control-plane \
   -f control-plane-values.yaml \
-  --namespace ff-control-plane \
-  --create-namespace
+  --namespace ff-control-plane
 ```
 
 ### Deploy Core Services
@@ -122,8 +123,7 @@ Next, deploy the core AI services (FF Broker, Context Service, Code Sandbox):
 helm install firefoundry-core firebrandanalytics/firefoundry-core \
   -f core-values.yaml \
   -f secrets.yaml \
-  --namespace ff-dev \
-  --create-namespace
+  --namespace ff-dev
 ```
 
 **Why both?** Local development benefits from:
