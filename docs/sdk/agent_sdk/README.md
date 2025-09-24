@@ -40,6 +40,25 @@ The Agent Bundle architecture is built on several key principles:
 - **Type Safety**: Leverage TypeScript for compile-time checking
 - **Streaming First**: Real-time progress tracking throughout the stack
 
+### 1.4 Links and Further Reading
+
+## Getting Started
+- **[Getting Started Guide](agent_sdk_getting_started.md)** - Step-by-step tutorial building a News Article Impact Analyzer to learn the core Entity-Bot-Prompt patterns.
+
+## Core Concepts  
+- **[Writing Bots](core/bots.md)** - Comprehensive guide to building AI-powered bots, including advanced error handling, tool calls, and direct execution patterns.
+- **[Entity Modeling](core/entities.md)** - Complete guide to designing entity graphs, runnable entities, job scheduling, and graph traversal patterns.
+- **[Prompting Framework](core/prompting.md)** - Deep dive into the structured prompting system, template nodes, working memory integration, and tool directives.
+
+## Feature Guides
+- **[Tool Calls](feature_guides/ad_hoc_tool_calls.md)** - Add external function calling capabilities to your bots for data lookup, calculations, and API integrations.
+- **[File Upload Patterns](feature_guides/file-upload-patterns.md)** - Comprehensive guide to handling binary file uploads, storage, and retrieval using the Entity-Bot-Prompt pattern.
+- **[Graph Traversal](feature_guides/graph_traversal.md)** - Navigate entity relationships and connections to build complex queries and workflows.
+- **[Entity Graph Example](feature_guides/intermediate_entity_graph_example.md)** - Complete walkthrough building a job-resume matching system demonstrating advanced entity design patterns.
+- **[Working with Files](feature_guides/uploading_files_example.md)** - Practical examples of storing and processing binary files using Working Memory and the Context Service.
+- **[Vector Similarity](feature_guides/vector-similarity-quickstart.md)** - Add semantic search capabilities to your entities with pre-computed embeddings and similarity matching.
+- **[Waitable Entities](feature_guides/waitable_guide.md)** - Build human-in-the-loop workflows that can pause execution and wait for external input indefinitely.
+
 ## 2. Entity System
 
 The entity system provides a graph-based representation of application objects and their relationships.
