@@ -22,7 +22,16 @@ This separation allows for clear division of responsibilities, independent devel
 
 ## Links and Further Reading
 
+### Tutorials
+
+For a hands-on, step-by-step introduction to the core components, start with these tutorials. They build on each other to teach the fundamentals of creating AI behaviors in isolation.
+
+- **[Building Your First Prompt](prompting_tutorial.md)** - A guided walkthrough of the Prompting Framework. Learn to create a dynamic, structured prompt from scratch.
+- **[Building Your First Bot](bot_tutorial.md)** - Learn how to bring a prompt to life by wrapping it in a Bot that can handle validation, use tools, and recover from errors.
+
 ### Essential Guides
+
+These are comprehensive reference guides that cover the architecture and advanced features of each core component in detail.
 
 - **[Entity Modeling and Development](entities.md)** - Complete guide to the entity framework including graph-based relationships, runnable entities, job scheduling, and advanced patterns like waitable entities and work queues.
 
@@ -34,10 +43,9 @@ This separation allows for clear division of responsibilities, independent devel
 
 For newcomers to the FireFoundry SDK, we recommend this learning path:
 
-1. Start with the [Getting Started Guide](../agent_sdk_getting_started.md) for hands-on experience
-2. Read [Entity Modeling](entities.md) to understand the foundational architecture  
-3. Study [Writing Bots](bots.md) to learn AI-powered behavior implementation
-4. Explore [Prompting Framework](prompting.md) to master LLM interactions
-5. Try the [Feature Guides](../feature_guides/) for specific advanced patterns
+1.  Start with the [Getting Started Guide](../agent_sdk_getting_started.md) for a complete, high-level tour of building an application with the Entity-Bot-Prompt pattern.
+2.  Work through the **[Tutorials](#tutorials)** above to get a focused, hands-on understanding of creating prompts and bots.
+3.  Dive into the **[Essential Guides](#essential-guides)** for a deep, architectural understanding of Entities, Bots, and Prompts.
+4.  Explore the [Feature Guides](../feature_guides/) for specific advanced patterns and capabilities.
 
 Each guide includes working code examples, best practices, and real-world implementation patterns from production FireFoundry applications.
