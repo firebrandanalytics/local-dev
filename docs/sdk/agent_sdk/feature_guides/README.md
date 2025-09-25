@@ -24,8 +24,6 @@ Each guide assumes familiarity with the basic Entity-Bot-Prompt architecture cov
 
 - **[Graph Traversal](graph_traversal.md)** - Navigate entity relationships and connections through typed edges to build complex queries, find related entities, and implement graph-based workflows.
 
-- **[Entity Graph Example](intermediate_entity_graph_example.md)** - Complete walkthrough building a job-resume matching system that demonstrates advanced entity design, relationship modeling, and computational entity patterns.
-
 ### Advanced Capabilities
 
 - **[Vector Similarity](vector-similarity-quickstart.md)** - Add semantic search capabilities to your entities with pre-computed embeddings, similarity matching, and the new gRPC broker integration for embedding generation.
