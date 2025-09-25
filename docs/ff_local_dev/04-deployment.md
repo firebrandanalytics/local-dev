@@ -111,6 +111,7 @@ First, deploy the infrastructure services (PostgreSQL, Concourse, Harbor, FF Con
 # Deploy control plane services
 helm install firefoundry-control firebrandanalytics/firefoundry-control-plane \
   -f control-plane-values.yaml \
+  -f secrets.yaml \
   --namespace ff-control-plane
 ```
 

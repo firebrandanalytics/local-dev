@@ -17,7 +17,7 @@ Traditional AI applications are monolithic and difficult to maintain. Agent bund
 
 ```bash
 # Discover available examples
-ff-cli project create --list-examples
+ff-cli examples list
 
 # Create project with a working example
 ff-cli project create my-smart-agent --with-example=talespring
@@ -35,7 +35,7 @@ ff-cli project create my-smart-agent
 cd my-smart-agent
 
 # Generate your first agent bundle
-ff-cli agent-bundle create smart-service --description "My smart agent service" --port 3001
+ff-cli agent-bundle create smart-service
 
 # Install dependencies and build
 pnpm install && turbo build
@@ -82,29 +82,40 @@ ff-cli agent-bundle create auth-service --description "Authentication service" -
 
 ## Deployment Process
 
-Deploy your agent bundles to the local FireFoundry environment using the published Helm charts:
+Deploy your agent bundles using a simplified 2-file configuration approach:
 
-### Step 1: Build Your Agent Bundle
+### Step 1: Prepare Configuration Files
+
+Your generated agent bundle includes template configuration files:
+- `values.local.yaml` - Pre-configured for local minikube deployment
+- `secrets.yaml.template` - Template for sensitive values
 
 ```bash
-# Navigate to your agent project
-cd my-ff-project
+# Navigate to your agent bundle directory
+cd apps/my-service
 
-# Build the agent bundle Docker image
-eval $(minikube docker-env)  # Use minikube's Docker daemon
-docker build -t my-service:latest -f apps/my-service/Dockerfile .
+# Copy and edit the secrets template
+cp secrets.yaml.template secrets.yaml
+# Edit secrets.yaml to add your database passwords and API keys
 ```
 
-### Step 2: Deploy Using Published Chart
+### Step 2: Build Your Agent Bundle
 
 ```bash
-# Deploy your agent bundle using the published chart
+# Build the agent bundle Docker image in minikube's Docker daemon
+eval $(minikube docker-env)  # Use minikube's Docker daemon
+docker build --build-arg GITHUB_TOKEN=$GITHUB_TOKEN -t my-service:latest -f Dockerfile ../..
+```
+
+**Note**: The `--build-arg GITHUB_TOKEN=$GITHUB_TOKEN` is required to authenticate with the private FireFoundry npm packages during the build process. Make sure your GITHUB_TOKEN environment variable is set (see [FireFoundry CLI Setup](05-ff-cli-setup.md)).
+
+### Step 3: Deploy Using Simplified Command
+
+```bash
+# Deploy your agent bundle with the 2-file configuration
 helm install my-service firebrandanalytics/agent-bundle \
-  --set image.repository=my-service \
-  --set image.tag=latest \
-  --set service.port=3000 \
-  --set env.BROKER_SERVICE_URL="http://ff-broker.ff-dev.svc.cluster.local:50061" \
-  --set env.CONTEXT_SERVICE_URL="http://context-service.ff-dev.svc.cluster.local:50051" \
+  -f values.local.yaml \
+  -f secrets.yaml \
   --namespace ff-dev
 
 # Verify deployment
@@ -112,11 +123,11 @@ kubectl -n ff-dev get pods | grep my-service
 kubectl -n ff-dev logs deployment/my-service -f
 ```
 
-### Step 3: Access Your Agent
+### Step 4: Access Your Agent
 
 ```bash
 # Set up port forwarding to access your agent
-kubectl -n ff-dev port-forward svc/my-service 3001:3000 &
+kubectl -n ff-dev port-forward svc/my-service 3001:3001 &
 
 # Test your agent
 curl http://localhost:3001/health
@@ -124,25 +135,25 @@ curl http://localhost:3001/health
 
 ## Managing Multiple Agent Bundles
 
-When developing multiple agent bundles, you can deploy them all to the same namespace:
+When developing multiple agent bundles, each should have its own configuration files:
 
 ```bash
-# Deploy multiple agent bundles with different ports
+# Each agent bundle has its own values and secrets
+cd apps/analytics-service
 helm install analytics-service firebrandanalytics/agent-bundle \
-  --set image.repository=analytics-service \
-  --set image.tag=latest \
-  --set service.port=3000 \
+  -f values.local.yaml \
+  -f secrets.yaml \
   --namespace ff-dev
 
+cd ../notification-service
 helm install notification-service firebrandanalytics/agent-bundle \
-  --set image.repository=notification-service \
-  --set image.tag=latest \
-  --set service.port=3000 \
+  -f values.local.yaml \
+  -f secrets.yaml \
   --namespace ff-dev
 
-# Set up port forwarding for each service
-kubectl -n ff-dev port-forward svc/analytics-service 3002:3000 &
-kubectl -n ff-dev port-forward svc/notification-service 3003:3000 &
+# Set up port forwarding for each service (assuming default port 3001)
+kubectl -n ff-dev port-forward svc/analytics-service 3002:3001 &
+kubectl -n ff-dev port-forward svc/notification-service 3003:3001 &
 ```
 
 ### Useful Management Commands
@@ -151,10 +162,11 @@ kubectl -n ff-dev port-forward svc/notification-service 3003:3000 &
 # List all deployed agent bundles
 helm list -n ff-dev
 
-# Update an existing agent bundle
+# Update an existing agent bundle after configuration changes
+cd apps/my-service
 helm upgrade my-service firebrandanalytics/agent-bundle \
-  --set image.repository=my-service \
-  --set image.tag=v2.0 \
+  -f values.local.yaml \
+  -f secrets.yaml \
   --namespace ff-dev
 
 # Remove an agent bundle
@@ -162,6 +174,41 @@ helm uninstall my-service -n ff-dev
 
 # Check all running services
 kubectl -n ff-dev get pods,svc
+```
+
+## Configuration Guide
+
+### Understanding the 2-File Approach
+
+The simplified deployment uses two configuration files:
+
+1. **values.local.yaml** - Non-sensitive configuration
+   - Image settings (repository, tag, pull policy)
+   - Service endpoints (FireFoundry services URLs)
+   - Database connection info (server, database name)
+   - Application settings (log levels, environment)
+
+2. **secrets.yaml** - Sensitive values
+   - Database passwords
+   - API keys
+   - Authentication tokens
+
+### Adding Custom Environment Variables
+
+If your agent needs additional environment variables:
+
+```yaml
+# In values.local.yaml - for non-sensitive values
+configMap:
+  data:
+    MY_CUSTOM_VAR: "my-value"
+    FEATURE_FLAG_X: "enabled"
+
+# In secrets.yaml - for sensitive values
+secret:
+  data:
+    MY_API_KEY: "secret-key-value"
+    EXTERNAL_SERVICE_TOKEN: "token-value"
 ```
 
 ## Troubleshooting Agent Deployment
