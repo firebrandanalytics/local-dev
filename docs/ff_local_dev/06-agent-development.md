@@ -362,15 +362,15 @@ You've successfully:
 - Tested the agent through the API gateway
 
 **Next Steps**:
-- **[Update Agent Bundles](07-updating-agent-bundles.md)** - Make changes and redeploy
+- **[Update Agent Bundles](08-updating-agent-bundles.md)** - Make changes and redeploy
 - Explore the talespring source code in `apps/talespring/src/` to understand Entity-Bot-Prompt patterns
 - Review entity definitions, bot implementations, and prompt composition
 - Try creating your own agent bundle: `ff-cli agent-bundle create my-service`
-- Learn about monitoring and operations: **[Operations Guide](08-operations.md)**
+- Learn about monitoring and operations: **[Operations Guide](07-operations.md)**
 
 ## Additional Resources
 
 - **Entity-Bot-Prompt Architecture**: See `~/dev/CLAUDE.md` for framework overview
 - **Agent SDK Documentation**: Available in generated project's README
 - **Example Agents**: Use `ff-cli examples list` to discover more examples
-- **Troubleshooting Guide**: **[Troubleshooting](08-troubleshooting.md)** for common issues
+- **Troubleshooting Guide**: **[Troubleshooting](09-troubleshooting.md)** for common issues

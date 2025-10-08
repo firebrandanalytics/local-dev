@@ -314,7 +314,7 @@ kubectl rollout restart deployment/notification-service-agent-bundle -n ff-dev
 
 Now that you can update agent bundles, explore:
 
-- **[Operations & Maintenance](08-operations.md)** - Monitor and maintain your deployments
+- **[Operations & Maintenance](07-operations.md)** - Monitor and maintain your deployments
 - **[Troubleshooting](09-troubleshooting.md)** - Solve common issues
 - **Agent SDK Documentation** - Learn advanced patterns and features
 

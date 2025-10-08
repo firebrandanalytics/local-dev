@@ -18,9 +18,6 @@ helm upgrade firefoundry-control . \
   -f values/control-plane.yaml \
   -f secrets.yaml \
   --namespace ff-control-plane
-
-# Update individual agent services
-./deploy-app-runner.sh my-service v1.2.0 ff-dev ../my-ff-project/apps/my-service
 ```
 
 ## Monitoring and Debugging
@@ -133,4 +130,4 @@ helm upgrade firefoundry-control . -f ff-control-backup.yaml -n ff-control-plane
 
 For troubleshooting specific issues, see:
 
-1. **[Troubleshooting Guide](08-troubleshooting.md)** - Common issues and solutions
+1. **[Troubleshooting Guide](09-troubleshooting.md)** - Common issues and solutions

@@ -16,7 +16,7 @@ If you're new to FireFoundry, follow these guides in order:
 ## Reference Guides
 
 - **[Operations & Maintenance](07-operations.md)** - Monitoring, debugging, and updates
-- **[Troubleshooting](08-troubleshooting.md)** - Common issues and solutions
+- **[Troubleshooting](09-troubleshooting.md)** - Common issues and solutions
 
 ## What is FireFoundry?
 

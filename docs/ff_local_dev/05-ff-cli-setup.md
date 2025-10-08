@@ -108,7 +108,7 @@ With the FireFoundry CLI installed, you're ready to start agent development:
 
 1. **[Agent Development](06-agent-development.md)** - Create your first agent bundle
 2. **[Operations & Maintenance](07-operations.md)** - Monitor and debug your agents
-3. **[Troubleshooting](08-troubleshooting.md)** - Common issues and solutions
+3. **[Troubleshooting](09-troubleshooting.md)** - Common issues and solutions
 
 ## Troubleshooting
 
