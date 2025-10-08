@@ -75,11 +75,23 @@ docker ps
 
 With Docker running, you can now install the remaining tools:
 
+### Kubernetes, minikube, etc:
+
+#### For Mac:
+
 ```bash
 # Install Kubernetes and development tools
 brew install minikube kubectl helm azure-cli
 
-# Install global Node.js dependencies (required for monorepo management)
+```
+
+#### For Windows:
+
+See the official minikube documentation: https://minikube.sigs.k8s.io/docs/start/?arch=%2Fwindows%2Fx86-64%2Fstable%2F.exe+download
+
+### turbo, for monorepo mgmt.
+
+```
 npm install -g pnpm turbo
 ```
 

@@ -1,278 +1,285 @@
-# Agent Bundle Development
+# Deploying the Talespring Example
 
-Learn how to create, develop, and deploy AI agent bundles with FireFoundry.
+This guide walks you through deploying and testing the **talespring** example agent bundle - a creative storytelling AI that demonstrates FireFoundry's Entity-Bot-Prompt architecture.
 
-## Why Agent Bundles?
+## Prerequisites
 
-Traditional AI applications are monolithic and difficult to maintain. Agent bundles provide:
+Before starting, ensure you've completed:
 
-- **Modularity**: Each agent handles specific domain responsibilities
-- **Reusability**: Agent bundles can be composed into larger systems
-- **Testability**: Individual agents can be tested in isolation
-- **Maintainability**: Clear boundaries make debugging and updates easier
+1. **[Prerequisites](01-prerequisites.md)** - Core tools installed
+2. **[Environment Setup](03-environment-setup.md)** - minikube cluster running
+3. **[Deploy Services](04-deployment.md)** - Control plane and core services deployed
+4. **[FF CLI Setup](05-ff-cli-setup.md)** - FireFoundry CLI installed
 
-## Creating Your First Agent Bundle
+## Step 1: Create Project with Talespring Example
 
-### Option 1: Explore Examples First (Recommended)
+First, list available examples to verify talespring is accessible:
 
 ```bash
-# Discover available examples
+# List available examples
 ff-cli examples list
-
-# Create project with a working example
-ff-cli project create my-smart-agent --with-example=talespring
-cd my-smart-agent
-
-# Install dependencies and build
-pnpm install && turbo build
 ```
 
-### Option 2: Create Empty Project
+You should see talespring along with other examples. Now create a new project:
 
 ```bash
-# Create empty monorepo
-ff-cli project create my-smart-agent
-cd my-smart-agent
-
-# Generate your first agent bundle
-ff-cli agent-bundle create smart-service
-
-# Install dependencies and build
-pnpm install && turbo build
+# Create project with talespring example
+cd /tmp  # Or your preferred workspace directory
+ff-cli project create talespring-demo --with-example=talespring
+cd talespring-demo
 ```
 
-### Option 3: Create with Initial Agent Bundle
+**What you get**:
+- Complete monorepo structure with Turborepo and pnpm
+- Working talespring agent in `apps/talespring/`
+- Pre-configured Dockerfile for containerization
+- Template configuration files for deployment
+
+## Step 2: Install Dependencies and Build
 
 ```bash
-# Create project with first empty agent bundle
-ff-cli project create my-smart-agent smart-service
-cd my-smart-agent
+# Install all dependencies
+pnpm install
 
-# Install dependencies and build
-pnpm install && turbo build
+# Build the project
+pnpm run build
 ```
 
-## What You Get
+This compiles TypeScript and prepares the agent bundle for deployment.
 
-- **Complete monorepo setup** with Turborepo, pnpm, and TypeScript
-- **Working examples** (when using `--with-example`) demonstrating Entity-Bot-Prompt patterns
-  - **talespring**: Creative writing and storytelling agent
-  - **explain-analyze**: SQL query analysis and optimization agent
-- **Docker configuration** for development and production builds
-- **Agent SDK integration** with comprehensive documentation
-- **Build system** with intelligent caching and dependency management
-- **Cursor AI integration** for enhanced development experience
+## Step 3: Build Docker Image
 
-## Scaling with Additional Agent Bundles
-
-Once your project is set up, you can easily add more agent bundles:
+Build the Docker image using minikube's Docker daemon (so Kubernetes can access it):
 
 ```bash
-# Generate additional specialized agent bundles
-ff-cli agent-bundle create analytics-service --description "Analytics and metrics service" --port 3002
-ff-cli agent-bundle create notification-service --description "User notification service" --port 3003
-ff-cli agent-bundle create auth-service --description "Authentication service" --port 3004
+# Switch to minikube's Docker environment
+eval $(minikube -p ff-local-dev docker-env)
 
-# Each agent bundle is:
-# - Fully independent with its own port and configuration
-# - Ready for Docker containerization
-# - Kubernetes deployment ready
-# - Integrated with the monorepo build system
+# Build the Docker image from project root
+docker build \
+  --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
+  -t talespring:latest \
+  -f apps/talespring/Dockerfile \
+  .
 ```
 
-## Deployment Process
+**Note**: The `GITHUB_TOKEN` build arg is required to access private FireFoundry packages during the build. This uses the token you configured in [FF CLI Setup](05-ff-cli-setup.md).
 
-Deploy your agent bundles using a simplified 2-file configuration approach:
-
-### Step 1: Prepare Configuration Files
-
-Your generated agent bundle includes template configuration files:
-- `values.local.yaml` - Pre-configured for local minikube deployment
-- `secrets.yaml.template` - Template for sensitive values
+Verify the image was built:
 
 ```bash
-# Navigate to your agent bundle directory
-cd apps/my-service
+docker images | grep talespring
+```
 
-# Copy and edit the secrets template
+## Step 4: Prepare Configuration Files
+
+Navigate to the talespring directory and prepare configuration:
+
+```bash
+cd apps/talespring
+
+# Copy the secrets template
 cp secrets.yaml.template secrets.yaml
-# Edit secrets.yaml to add your database passwords and API keys
 ```
 
-### Step 2: Build Your Agent Bundle
+**For local development**, the default secrets template works as-is since we're connecting to shared Firebrand services. For production deployments, you would edit `secrets.yaml` with actual credentials.
+
+Now create the local values file. The talespring example includes a `values.local.yaml.template` file. Copy and customize it:
 
 ```bash
-# Build the agent bundle Docker image in minikube's Docker daemon
-eval $(minikube docker-env)  # Use minikube's Docker daemon
-docker build --build-arg GITHUB_TOKEN=$GITHUB_TOKEN -t my-service:latest -f Dockerfile ../..
+# Copy the values template
+cp values.local.yaml.template values.local.yaml
 ```
 
-**Note**: The `--build-arg GITHUB_TOKEN=$GITHUB_TOKEN` is required to authenticate with the private FireFoundry npm packages during the build process. Make sure your GITHUB_TOKEN environment variable is set (see [FireFoundry CLI Setup](05-ff-cli-setup.md)).
-
-### Step 3: Deploy Using Simplified Command
-
-```bash
-# Deploy your agent bundle with the 2-file configuration
-helm install my-service firebrandanalytics/agent-bundle \
-  -f values.local.yaml \
-  -f secrets.yaml \
-  --namespace ff-dev
-
-# Verify deployment
-kubectl -n ff-dev get pods | grep my-service
-kubectl -n ff-dev logs deployment/my-service -f
-```
-
-### Step 4: Access Your Agent
-
-```bash
-# Set up port forwarding to access your agent
-kubectl -n ff-dev port-forward svc/my-service 3001:3001 &
-
-# Test your agent
-curl http://localhost:3001/health
-```
-
-## Managing Multiple Agent Bundles
-
-When developing multiple agent bundles, each should have its own configuration files:
-
-```bash
-# Each agent bundle has its own values and secrets
-cd apps/analytics-service
-helm install analytics-service firebrandanalytics/agent-bundle \
-  -f values.local.yaml \
-  -f secrets.yaml \
-  --namespace ff-dev
-
-cd ../notification-service
-helm install notification-service firebrandanalytics/agent-bundle \
-  -f values.local.yaml \
-  -f secrets.yaml \
-  --namespace ff-dev
-
-# Set up port forwarding for each service (assuming default port 3001)
-kubectl -n ff-dev port-forward svc/analytics-service 3002:3001 &
-kubectl -n ff-dev port-forward svc/notification-service 3003:3001 &
-```
-
-### Useful Management Commands
-
-```bash
-# List all deployed agent bundles
-helm list -n ff-dev
-
-# Update an existing agent bundle after configuration changes
-cd apps/my-service
-helm upgrade my-service firebrandanalytics/agent-bundle \
-  -f values.local.yaml \
-  -f secrets.yaml \
-  --namespace ff-dev
-
-# Remove an agent bundle
-helm uninstall my-service -n ff-dev
-
-# Check all running services
-kubectl -n ff-dev get pods,svc
-```
-
-## Configuration Guide
-
-### Understanding the 2-File Approach
-
-The simplified deployment uses two configuration files:
-
-1. **values.local.yaml** - Non-sensitive configuration
-   - Image settings (repository, tag, pull policy)
-   - Service endpoints (FireFoundry services URLs)
-   - Database connection info (server, database name)
-   - Application settings (log levels, environment)
-
-2. **secrets.yaml** - Sensitive values
-   - Database passwords
-   - API keys
-   - Authentication tokens
-
-### Adding Custom Environment Variables
-
-If your agent needs additional environment variables:
+Edit `values.local.yaml` to configure for local minikube deployment. Update these key sections:
 
 ```yaml
-# In values.local.yaml - for non-sensitive values
-configMap:
-  data:
-    MY_CUSTOM_VAR: "my-value"
-    FEATURE_FLAG_X: "enabled"
+# Local minikube values for talespring
+bundleName: "talespring"  # IMPORTANT: Must match your service name
 
-# In secrets.yaml - for sensitive values
-secret:
-  data:
-    MY_API_KEY: "secret-key-value"
-    EXTERNAL_SERVICE_TOKEN: "token-value"
+# Image configuration
+image:
+  repository: talespring
+  tag: "latest"
+  pullPolicy: Never  # Use local Docker image
+
+# Service configuration
+service:
+  type: ClusterIP
+  http:
+    enabled: true
+    port: 3001
+    targetPort: 3001
+
+# ... rest of config remains the same
 ```
 
-## Troubleshooting Agent Deployment
+**Critical**: The `bundleName` field determines the Kong route path (`/agents/ff-dev/talespring`). If omitted, it defaults to `my-bundle` which will create the wrong route.
 
-### Image Pull Issues
+## Step 5: Deploy to Kubernetes
+
+Deploy talespring using the FireFoundry agent-bundle Helm chart:
 
 ```bash
-# If your image isn't found, ensure it's built in minikube's Docker
-eval $(minikube docker-env)
-docker images | grep my-service
-
-# Rebuild if necessary
-docker build -t my-service:latest -f apps/my-service/Dockerfile .
+# Deploy from the apps/talespring directory
+helm install talespring firebrandanalytics/agent-bundle \
+  -f values.local.yaml \
+  -f secrets.yaml \
+  --namespace ff-dev
 ```
 
-### Service Connection Issues
+**Verify deployment**:
 
 ```bash
-# Check if FireFoundry core services are running
-kubectl -n ff-dev get pods | grep -E "(ff-broker|context-service|code-sandbox)"
+# Check pod status
+kubectl get pods -n ff-dev | grep talespring
 
-# Test connectivity from your agent pod
-kubectl -n ff-dev exec deployment/my-service -- curl -v http://ff-broker.ff-dev.svc.cluster.local:50061
+# Watch pod startup (wait until STATUS shows Running)
+kubectl get pods -n ff-dev -w
 ```
 
-## Example-Driven Development Workflow
+The pod should transition to `Running` status within 30-60 seconds.
 
-The recommended development approach leverages working examples:
+## Step 6: Verify Kong Route Registration
+
+The agent bundle controller automatically discovers your service and creates a Kong route. Verify the route was created:
 
 ```bash
-# 1. Explore available examples and their capabilities
-ff-cli project create --list-examples
+# Port-forward Kong Admin API (if not already running)
+kubectl port-forward -n ff-control-plane svc/firefoundry-control-kong-admin 8001:8001 &
 
-# 2. Create project with the most relevant example
-ff-cli project create my-domain-app --with-example=talespring
-
-# 3. Study the example implementation
-cd my-domain-app
-# - Review apps/talespring/ for Entity-Bot-Prompt patterns
-# - Examine the entity definitions and bot implementations
-# - Understand prompt composition techniques
-
-# 4. Customize the example or create new agent bundles
-ff-cli agent-bundle create my-custom-service --description "My domain-specific service" --port 3002
-
-# 5. Develop and test
-pnpm install && pnpm dev
+# Check Kong routes
+curl -s http://localhost:8001/routes | jq '.data[] | {name, paths}'
 ```
 
-## AI-Enhanced Development
+You should see a route named `ff-agent-ff-dev-talespring-route` with path `/agents/ff-dev/talespring`.
 
-FireFoundry includes AI pair programming support through Cursor integration:
+**If the route shows wrong path** (like `/agents/ff-dev/my-bundle`):
+1. You forgot to set `bundleName` in values.local.yaml
+2. Delete the wrong Kong route: `curl -X DELETE http://localhost:8001/routes/<wrong-route-name>`
+3. Update values.local.yaml with `bundleName: "talespring"`
+4. Upgrade the Helm release: `helm upgrade talespring firebrandanalytics/agent-bundle -f values.local.yaml -f secrets.yaml --namespace ff-dev`
+5. Restart the agent controller: `kubectl delete pod -n ff-control-plane -l app.kubernetes.io/component=agent-bundle-controller`
+
+## Step 7: Test Talespring Through Kong
+
+Set up port-forwarding to access Kong's proxy (the API gateway):
 
 ```bash
-# The .cursorrules file provides context to AI assistants about:
-# - FireFoundry architecture patterns
-# - Agent SDK usage examples
-# - Common troubleshooting steps
-# - Best practices for agent development
+# Port-forward Kong proxy to localhost (run in separate terminal or background)
+kubectl port-forward -n ff-control-plane svc/firefoundry-control-kong-proxy 8080:80
 ```
 
-## Next Steps
+**Note for macOS users**: Direct NodePort access doesn't work with Docker Desktop's minikube. You must use port-forwarding to access services.
 
-Now that you can create agent bundles, learn about:
+Now test talespring endpoints:
 
-1. **[Operations & Maintenance](07-operations.md)** - Monitor and maintain your deployments
-2. **[Troubleshooting](08-troubleshooting.md)** - Solve common issues
+```bash
+# Health check
+curl http://localhost:8080/agents/ff-dev/talespring/health/ready
+
+# Expected: {"status":"healthy","timestamp":"..."}
+
+# Service info
+curl http://localhost:8080/agents/ff-dev/talespring/info
+
+# Expected: {"app_id":"...","app_name":"ChildrensStories",...}
+```
+
+## Step 8: Test with Postman
+
+Use Postman to test the talespring agent's story generation capabilities:
+
+**Base URL**: `http://localhost:8080/agents/ff-dev/talespring`
+
+**Available Endpoints**:
+
+1. **GET** `/health/ready` - Health check
+2. **GET** `/info` - Service metadata
+3. **POST** `/invoke` - Execute agent methods
+
+**Example Request - Generate Story**:
+
+```http
+POST http://localhost:8080/agents/ff-dev/talespring/invoke
+Content-Type: application/json
+
+{
+  "entityName": "EntityTaleSpring",
+  "method": "generateStory",
+  "args": {
+    "theme": "adventure",
+    "ageGroup": "8-10"
+  }
+}
+```
+
+The agent will generate a creative story based on the theme and age group, demonstrating FireFoundry's LLM integration and prompt engineering patterns.
+
+## Troubleshooting
+
+### Pod Not Starting
+
+```bash
+# Check pod events
+kubectl describe pod -n ff-dev <pod-name>
+
+# Check logs
+kubectl logs -n ff-dev <pod-name>
+```
+
+Common issues:
+- **ImagePullBackOff**: Image not found - rebuild with `eval $(minikube docker-env)` first
+- **CrashLoopBackOff**: Configuration error - check secrets.yaml and values.local.yaml
+- **Pending**: Insufficient resources - check `minikube status` and resource allocation
+
+### Route Not Created
+
+```bash
+# Check agent controller logs
+kubectl logs -n ff-control-plane -l app.kubernetes.io/component=agent-bundle-controller --tail=100
+```
+
+Common causes:
+- Service doesn't have required labels (chart should add these automatically)
+- Agent controller not running - check `kubectl get pods -n ff-control-plane`
+- Service discovery lag - wait 10-20 seconds after deployment
+
+### Authentication Errors
+
+If you see `"No API key found in request"`:
+
+1. Authentication is enabled in your control plane configuration
+2. For local development, authentication should be disabled
+3. Check `~/dev/ff-configs/environments/dev/control-plane-values.yaml`:
+   ```yaml
+   agentBundleController:
+     authentication:
+       enabled: false  # Should be false for local dev
+   ```
+4. If changed, upgrade control plane: `helm upgrade firefoundry-control ...`
+5. Restart agent controller to apply changes
+
+## What You've Accomplished
+
+You've successfully:
+
+- Created a FireFoundry project with the talespring example
+- Built and containerized an agent bundle
+- Deployed to Kubernetes using Helm
+- Configured automatic Kong route registration
+- Tested the agent through the API gateway
+
+**Next Steps**:
+- **[Update Agent Bundles](07-updating-agent-bundles.md)** - Make changes and redeploy
+- Explore the talespring source code in `apps/talespring/src/` to understand Entity-Bot-Prompt patterns
+- Review entity definitions, bot implementations, and prompt composition
+- Try creating your own agent bundle: `ff-cli agent-bundle create my-service`
+- Learn about monitoring and operations: **[Operations Guide](08-operations.md)**
+
+## Additional Resources
+
+- **Entity-Bot-Prompt Architecture**: See `~/dev/CLAUDE.md` for framework overview
+- **Agent SDK Documentation**: Available in generated project's README
+- **Example Agents**: Use `ff-cli examples list` to discover more examples
+- **Troubleshooting Guide**: **[Troubleshooting](08-troubleshooting.md)** for common issues

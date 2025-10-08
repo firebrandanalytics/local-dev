@@ -85,13 +85,13 @@ Test that your CLI installation is working:
 ff-cli --version
 
 # Test access to examples (requires GitHub token)
-ff-cli project create --list-examples
+ff-cli examples list
 ```
 
 **Expected output:**
 
 - `ff-cli --version` should show the CLI version
-- `ff-cli project create --list-examples` should list available project templates
+- `ff-cli examples list` should list available example agent bundles
 
 ## What the FireFoundry CLI Does
 
