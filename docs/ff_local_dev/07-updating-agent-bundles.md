@@ -60,7 +60,7 @@ ls -la apps/talespring/dist/
 
 ```bash
 # Switch to minikube's Docker environment
-eval $(minikube -p ff-local-dev docker-env)
+eval $(minikube docker-env)
 
 # Verify you're using minikube's Docker
 docker info | grep -i "Name:"
@@ -164,7 +164,7 @@ For fast iteration, combine all steps:
 # Complete rebuild and redeploy (one-liner)
 cd /tmp/talespring-demo && \
   pnpm run build && \
-  eval $(minikube -p ff-local-dev docker-env) && \
+  eval $(minikube docker-env) && \
   docker build --build-arg GITHUB_TOKEN=$GITHUB_TOKEN -t talespring:latest -f apps/talespring/Dockerfile . && \
   kubectl rollout restart deployment/talespring-agent-bundle -n ff-dev && \
   kubectl rollout status deployment/talespring-agent-bundle -n ff-dev
@@ -175,7 +175,7 @@ cd /tmp/talespring-demo && \
 # Add to ~/.zshrc or ~/.bashrc
 alias ff-update-talespring='cd /tmp/talespring-demo && \
   pnpm run build && \
-  eval $(minikube -p ff-local-dev docker-env) && \
+  eval $(minikube docker-env) && \
   docker build --build-arg GITHUB_TOKEN=$GITHUB_TOKEN -t talespring:latest -f apps/talespring/Dockerfile . && \
   kubectl rollout restart deployment/talespring-agent-bundle -n ff-dev'
 
@@ -189,7 +189,7 @@ ff-update-talespring
 
 ```bash
 # Check if using minikube's Docker
-eval $(minikube -p ff-local-dev docker-env)
+eval $(minikube docker-env)
 docker images | grep talespring
 
 # Rebuild image
@@ -277,7 +277,7 @@ docker build -t talespring:latest .
 **✅ Do this:**
 ```bash
 # Always use minikube's Docker daemon
-eval $(minikube -p ff-local-dev docker-env)
+eval $(minikube docker-env)
 docker build -t talespring:latest .
 ```
 
@@ -301,7 +301,7 @@ If you're working with multiple agent bundles, the same workflow applies to each
 # Update analytics-service
 cd /path/to/my-project
 pnpm run build
-eval $(minikube -p ff-local-dev docker-env)
+eval $(minikube docker-env)
 docker build --build-arg GITHUB_TOKEN=$GITHUB_TOKEN -t analytics-service:latest -f apps/analytics-service/Dockerfile .
 kubectl rollout restart deployment/analytics-service-agent-bundle -n ff-dev
 

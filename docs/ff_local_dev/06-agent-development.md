@@ -53,7 +53,7 @@ Build the Docker image using minikube's Docker daemon (so Kubernetes can access 
 
 ```bash
 # Switch to minikube's Docker environment
-eval $(minikube -p ff-local-dev docker-env)
+eval $(minikube docker-env)
 
 # Build the Docker image from project root
 docker build \
@@ -188,33 +188,124 @@ curl http://localhost:8080/agents/ff-dev/talespring/info
 
 ## Step 8: Test with Postman
 
-Use Postman to test the talespring agent's story generation capabilities:
+Postman provides a user-friendly interface for testing your agent bundle's API endpoints. We've created a complete collection with pre-configured requests for talespring.
 
-**Base URL**: `http://localhost:8080/agents/ff-dev/talespring`
+### Install Postman
 
-**Available Endpoints**:
+If you don't have Postman installed:
 
-1. **GET** `/health/ready` - Health check
-2. **GET** `/info` - Service metadata
-3. **POST** `/invoke` - Execute agent methods
+1. Download from [postman.com/downloads](https://www.postman.com/downloads/)
+2. Install and launch Postman
+3. Sign in or create a free account (optional but recommended)
 
-**Example Request - Generate Story**:
+### Import the Talespring Collection
 
-```http
-POST http://localhost:8080/agents/ff-dev/talespring/invoke
-Content-Type: application/json
+Download and import the pre-built collection:
 
+1. **Download the collection**: [talespring-postman-collection.json](talespring-postman-collection.json)
+   - Right-click and "Save Link As..." or download directly
+
+2. **Import into Postman**:
+   - Open Postman
+   - Click **Import** button (top left)
+   - Drag and drop the downloaded JSON file, or click **Upload Files**
+   - Click **Import** to confirm
+
+3. **You should see**: "TaleSpring - Children's Story Generation API" collection in your sidebar
+
+### Configure Environment Variables
+
+Set up the base URL to point to your local Kong gateway:
+
+1. **Create a new environment**:
+   - Click the **Environments** tab (left sidebar)
+   - Click **+** to create new environment
+   - Name it "Local Minikube"
+
+2. **Add variables**:
+   - Variable: `BASE_URL`
+   - Initial Value: `http://localhost:8080/agents/ff-dev/talespring`
+   - Current Value: `http://localhost:8080/agents/ff-dev/talespring`
+   - Click **Save**
+
+3. **Activate the environment**:
+   - Select "Local Minikube" from the environment dropdown (top right)
+
+### Test the Collection
+
+The collection includes organized folders with all talespring endpoints:
+
+**Health & Info**:
+- `GET /health/ready` - Health check
+- `GET /health/live` - Liveness probe
+- `GET /info` - Service metadata
+
+**Story Generation Workflow**:
+1. `POST /createStoryRequest` - Start story generation
+   - Auto-captures `workflowId` and `storyRequestId`
+2. `GET /workflow/:workflowId/status` - Poll for completion
+3. `GET /story/:storyRequestId` - Retrieve generated story
+
+**Direct Invoke (Advanced)**:
+- `POST /invoke` - Direct entity method invocation
+
+### Quick Test Flow
+
+1. **Check health**:
+   - Open "Health & Info" folder
+   - Click "Health Check (Readiness)"
+   - Click **Send**
+   - You should see: `{"status":"healthy","timestamp":"..."}`
+
+2. **Generate a story**:
+   - Open "Story Generation Workflow" folder
+   - Click "Create Story Request"
+   - Review the request body (pre-filled with example data)
+   - Click **Send**
+   - The response will auto-populate `workflowId` and `storyRequestId`
+
+3. **Check workflow status**:
+   - Click "Get Workflow Status"
+   - Click **Send**
+   - Wait until `status: "completed"`
+
+4. **Get the story**:
+   - Click "Get Story by ID"
+   - Click **Send**
+   - View the generated story in the response
+
+### Customize Story Requests
+
+Edit the request body in "Create Story Request" to experiment:
+
+```json
 {
-  "entityName": "EntityTaleSpring",
-  "method": "generateStory",
-  "args": {
-    "theme": "adventure",
-    "ageGroup": "8-10"
-  }
+  "storyDescription": "A magical adventure in a enchanted forest",
+  "theme": "fantasy",
+  "ageGroup": "6-8",
+  "length": "medium",
+  "educationalFocus": "problem-solving"
 }
 ```
 
-The agent will generate a creative story based on the theme and age group, demonstrating FireFoundry's LLM integration and prompt engineering patterns.
+### Troubleshooting Postman
+
+**Connection refused errors**:
+```bash
+# Verify Kong port-forward is running
+ps aux | grep port-forward
+
+# Restart if needed
+kubectl port-forward -n ff-control-plane svc/firefoundry-control-kong-proxy 8080:80
+```
+
+**404 Not Found**:
+- Check that `BASE_URL` environment variable is set correctly
+- Verify the talespring route exists: `curl -s http://localhost:8001/routes | jq '.data[] | {name, paths}'`
+
+**500 Internal Server Error**:
+- Check pod logs: `kubectl logs -n ff-dev -l app.kubernetes.io/instance=talespring`
+- Verify core services are running: `kubectl get pods -n ff-dev`
 
 ## Troubleshooting
 

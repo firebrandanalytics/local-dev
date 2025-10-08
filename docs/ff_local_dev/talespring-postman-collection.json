@@ -1,0 +1,501 @@
+{
+	"info": {
+		"_postman_id": "87392ceb-85fc-4ce8-97a6-b07234c6bfbc",
+		"name": "TaleSpring - Children's Story Generation API",
+		"description": "Complete API collection for TaleSpring, an AI-powered children's story generation service with content safety validation.\n\n## Quick Start Flow\n\n1. **Create Story Request** - Start a new story generation workflow\n2. **Poll Workflow Status** - Check if the story is complete\n3. **Get Story** - Retrieve the final generated story\n\n## Environment Variables\n\nSet these in Postman Environment:\n- `BASE_URL`: http://localhost:3001\n- `workflowId`: Auto-populated from Create Story Request\n- `storyRequestId`: Auto-populated from Create Story Request",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "40699039"
+	},
+	"item": [
+		{
+			"name": "Health & Info",
+			"item": [
+				{
+					"name": "Health Check (Readiness)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/health/ready",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"health",
+								"ready"
+							]
+						},
+						"description": "Checks if the service is ready to accept requests. Returns health status of dependencies."
+					},
+					"response": []
+				},
+				{
+					"name": "Health Check (Liveness)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/health/live",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"health",
+								"live"
+							]
+						},
+						"description": "Liveness probe - always returns alive if process is running."
+					},
+					"response": []
+				},
+				{
+					"name": "Server Info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/info",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"info"
+							]
+						},
+						"description": "Get agent bundle metadata including app ID, name, description, and server configuration."
+					},
+					"response": []
+				},
+				{
+					"name": "Ready Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/ready",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"ready"
+							]
+						},
+						"description": "Checks if the agent bundle has completed initialization."
+					},
+					"response": []
+				}
+			],
+			"description": "Standard FireFoundry health check and info endpoints"
+		},
+		{
+			"name": "Story Creation",
+			"item": [
+				{
+					"name": "Create Story Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parse the response",
+									"const jsonData = pm.response.json();",
+									"",
+									"// Extract the workflowId and storyRequestId from nested result",
+									"if (jsonData.success && jsonData.result) {",
+									"    pm.environment.set('workflowId', jsonData.result.workflowId);",
+									"    pm.environment.set('storyRequestId', jsonData.result.storyRequestId);",
+									"    ",
+									"    console.log('Workflow ID:', jsonData.result.workflowId);",
+									"    console.log('Story Request ID:', jsonData.result.storyRequestId);",
+									"    ",
+									"    pm.test('Status is success', function () {",
+									"        pm.expect(jsonData.success).to.be.true;",
+									"    });",
+									"    ",
+									"    pm.test('Workflow ID is set', function () {",
+									"        pm.expect(jsonData.result.workflowId).to.be.a('string');",
+									"        pm.expect(jsonData.result.workflowId.length).to.be.greaterThan(0);",
+									"    });",
+									"    ",
+									"    pm.test('Story Request ID is set', function () {",
+									"        pm.expect(jsonData.result.storyRequestId).to.be.a('string');",
+									"        pm.expect(jsonData.result.storyRequestId.length).to.be.greaterThan(0);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"storyDescription\": \"An owl tries to sleep during the day nbut can't because all the wildlife around it is noisy. At night, it hoots loudly while all the other wildlife try to sleep.\"\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/create-story-request",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"create-story-request"
+							]
+						},
+						"description": "Creates a new story request and starts the workflow. Returns both `storyRequestId` and `workflowId`.\n\nThe workflow executes asynchronously with these steps:\n1. Content Safety Check\n2. Story Proposal Generation\n3. Full Story Generation\n\nUse the returned `workflowId` to poll status and retrieve the final story."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Story Request - Simple",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"if (jsonData.success && jsonData.result) {",
+									"    pm.environment.set('workflowId', jsonData.result.workflowId);",
+									"    pm.environment.set('storyRequestId', jsonData.result.storyRequestId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"storyDescription\": \"A curious cat who learns to share\"\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/create-story-request",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"create-story-request"
+							]
+						},
+						"description": "Simple story request example with minimal description."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Story Request - Adventure",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"if (jsonData.success && jsonData.result) {",
+									"    pm.environment.set('workflowId', jsonData.result.workflowId);",
+									"    pm.environment.set('storyRequestId', jsonData.result.storyRequestId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"storyDescription\": \"A young explorer discovers a magical forest where animals can talk and teaches them about the importance of protecting nature\"\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/create-story-request",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"create-story-request"
+							]
+						},
+						"description": "Adventure story with environmental theme."
+					},
+					"response": []
+				}
+			],
+			"description": "Create new story generation requests"
+		},
+		{
+			"name": "Workflow Management",
+			"item": [
+				{
+					"name": "Get Workflow Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/get-workflow-status?workflowId={{workflowId}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"get-workflow-status"
+							],
+							"query": [
+								{
+									"key": "workflowId",
+									"value": "{{workflowId}}",
+									"description": "The workflow ID returned from create-story-request"
+								}
+							]
+						},
+						"description": "Get the current status of a workflow. Status values:\n- `Pending`: Not yet started\n- `InProgress`: Currently executing\n- `Completed`: Successfully finished\n- `Failed`: Encountered an error\n\nPoll this endpoint to check if story generation is complete."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Workflow Details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/get-workflow-details?workflowId={{workflowId}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"get-workflow-details"
+							],
+							"query": [
+								{
+									"key": "workflowId",
+									"value": "{{workflowId}}"
+								}
+							]
+						},
+						"description": "Get comprehensive workflow information including:\n- Workflow metadata (id, status, description)\n- All workflow steps with their outputs\n- Summary statistics (total steps, completed steps)\n\nSteps include:\n1. ContentSafetyCheck - validates content appropriateness\n2. StoryProposal - generates story outline\n3. FullStory - creates complete children's story"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Workflows",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/get-all-workflows",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"get-all-workflows"
+							]
+						},
+						"description": "Get a list of all workflows (completed and in-progress), sorted by creation date (newest first).\n\nReturns basic info for each workflow:\n- id\n- storyDescription\n- status"
+					},
+					"response": []
+				}
+			],
+			"description": "Monitor and manage story generation workflows"
+		},
+		{
+			"name": "Story Retrieval",
+			"item": [
+				{
+					"name": "Get Story",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"if (jsonData.success && jsonData.result.success) {",
+									"    pm.test('Story retrieved successfully', function () {",
+									"        pm.expect(jsonData.result.story).to.be.a('string');",
+									"        pm.expect(jsonData.result.story.length).to.be.greaterThan(0);",
+									"    });",
+									"    ",
+									"    pm.test('Metadata is present', function () {",
+									"        pm.expect(jsonData.result.metadata).to.be.an('object');",
+									"        pm.expect(jsonData.result.metadata.title).to.exist;",
+									"    });",
+									"    ",
+									"    console.log('Story Title:', jsonData.result.metadata.title);",
+									"    console.log('Age Range:', jsonData.result.metadata.ageRange);",
+									"    console.log('Reading Time:', jsonData.result.metadata.readingTime);",
+									"} else {",
+									"    console.log('Story not yet ready:', jsonData.result.message);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/get-story?workflowId={{workflowId}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"get-story"
+							],
+							"query": [
+								{
+									"key": "workflowId",
+									"value": "{{workflowId}}"
+								}
+							]
+						},
+						"description": "Retrieve the final generated story for a completed workflow.\n\nReturns:\n- `success`: boolean indicating if story is ready\n- `story`: The complete story text\n- `metadata`: \n  - title\n  - moral (lesson of the story)\n  - ageRange (target age group)\n  - readingTime (estimated duration)\n  - keywords (story themes)\n  - created/updated timestamps\n\nIf the story is not yet complete, returns a message indicating the current status."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Story Requests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/get-story-requests",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"get-story-requests"
+							]
+						},
+						"description": "Get all story requests with their associated workflows.\n\nReturns an array of:\n- id (story request ID)\n- storyDescription\n- timestamp\n- workflow (id, status, currentStep) if exists"
+					},
+					"response": []
+				}
+			],
+			"description": "Retrieve generated stories and story requests"
+		},
+		{
+			"name": "Advanced",
+			"item": [
+				{
+					"name": "Direct Entity Invocation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"entity_id\": \"{{workflowId}}\",\n  \"method_name\": \"getWorkflowResult\",\n  \"args\": []\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/invoke",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"invoke"
+							]
+						},
+						"description": "Advanced: Directly invoke entity methods using the FireFoundry `/invoke` endpoint.\n\nThis bypasses the high-level API and calls entity methods directly. Useful for:\n- Custom entity operations\n- Debugging\n- Advanced workflows\n\nRequires knowledge of entity IDs and method signatures."
+					},
+					"response": []
+				},
+				{
+					"name": "Start Iterator (Streaming)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"entity_id\": \"{{workflowId}}\",\n  \"method_name\": \"start\",\n  \"args\": []\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/iterator/start",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"iterator",
+								"start"
+							]
+						},
+						"description": "Advanced: Start an async iterator for streaming workflow progress.\n\nReturns an `iterator_id` that can be used with `/iterator/next` to retrieve progress updates in real-time.\n\nUseful for:\n- Live progress tracking\n- Step-by-step workflow monitoring\n- Real-time UI updates"
+					},
+					"response": []
+				}
+			],
+			"description": "Advanced API usage for power users"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "BASE_URL",
+			"value": "http://localhost:3001",
+			"type": "string"
+		},
+		{
+			"key": "workflowId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "storyRequestId",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
