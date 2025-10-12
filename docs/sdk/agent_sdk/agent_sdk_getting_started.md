@@ -74,59 +74,98 @@ The `withSchemaMetadata` function helps the LLM understand our schema structure 
 
 ## Creating the Analysis Prompt
 
-The prompt contains the actual AI logic - this is where we define how the LLM should perform the analysis:
+The prompt contains the actual AI logic - this is where we define how the LLM should perform the analysis. We use `StructuredDataPrompt` which automatically handles schema formatting and provides a sample output to guide the LLM:
 
 ```typescript
 import {
-  Prompt,
+  StructuredDataPrompt,
+  StructuredDataPTH,
   PromptTemplateNode,
   PromptTemplateSectionNode,
-  PromptTemplateListNode,
-  PromptTemplateSchemaSetNode,
-  PromptTypeHelper
+  PromptTemplateListNode
 } from '@firebrandanalytics/ff-agent-sdk';
+import { ImpactAnalysisSchema } from '../schemas.js';
 
-type IMPACT_PROMPT_ARGS = {
-  static: { app_name?: string };
-  request: {};
+// Sample output to show the LLM what format to produce
+const sampleOutput = {
+  article_summary: "Major tech company announces quantum computing breakthrough with unprecedented processing speeds.",
+  healthcare: {
+    impact_level: "high",
+    confidence: 0.8,
+    reasoning: "Quantum computing could accelerate drug discovery and medical research significantly.",
+    key_factors: ["drug discovery acceleration", "complex medical calculations", "research speed improvements"]
+  },
+  shipping_logistics: {
+    impact_level: "medium",
+    confidence: 0.7,
+    reasoning: "Optimization algorithms could improve route planning and supply chain efficiency.",
+    key_factors: ["logistics optimization", "route planning", "supply chain management"]
+  },
+  technology: {
+    impact_level: "critical",
+    confidence: 0.9,
+    reasoning: "Direct disruption to computing industry with new processing capabilities.",
+    key_factors: ["quantum processor", "data processing revolution", "computing paradigm shift"]
+  },
+  overall_significance: "high"
 };
 
-type IMPACT_PTH = PromptTypeHelper<string, IMPACT_PROMPT_ARGS>;
-
-export class ImpactAnalysisPrompt extends Prompt<IMPACT_PTH> {
-  constructor(args: IMPACT_PTH['args']['static']) {
-    super('system', args);
-    this.add_section(this.get_Context_Section());
-    this.add_section(this.get_Analysis_Rules());
+export class ImpactAnalysisPrompt extends StructuredDataPrompt {
+  constructor(
+    args: StructuredDataPTH['args']['static'],
+    options?: StructuredDataPTH['options']
+  ) {
+    super(ImpactAnalysisSchema, sampleOutput, args, options);
+    // Add custom section for business verticals
     this.add_section(this.get_Verticals_Section());
-    this.add_section(this.get_Schema_Section());
   }
 
-  get_Context_Section(): PromptTemplateNode<IMPACT_PTH> {
-    return new PromptTemplateSectionNode<IMPACT_PTH>({
-      semantic_type: 'context',
-      content: 'Context:',
+  // Implement the required abstract method
+  protected get_Task_Section(): PromptTemplateNode<StructuredDataPTH> {
+    return new PromptTemplateSectionNode<StructuredDataPTH>({
+      semantic_type: 'rule',
+      content: 'Task:',
       children: [
-        `You are an expert business analyst for ${this.static_args.app_name || 'a consulting firm'}.`,
-        `Your task is to analyze news articles and assess their potential impact across different business verticals.`,
-        `Provide objective, data-driven assessments with clear reasoning.`
+        'Analyze news articles for business impact across three verticals: healthcare, shipping & logistics, and technology.',
+        'Assess the potential impact for each vertical considering both immediate and potential long-term effects.',
+        'Provide objective, data-driven assessments with clear reasoning.',
+        'Assign appropriate impact levels (none, low, medium, high, critical) and confidence scores (0.0-1.0).',
+        'Identify specific key factors from the article that drive each assessment.',
+        'Summarize the article in 2-3 sentences.',
+        'Determine the overall significance (low, medium, high) across all verticals.'
       ]
     });
   }
 
-  get_Analysis_Rules(): PromptTemplateNode<IMPACT_PTH> {
-    return new PromptTemplateSectionNode<IMPACT_PTH>({
+  // Override context to be specific for impact analysis
+  protected get_Context_Section(): PromptTemplateNode<StructuredDataPTH> {
+    return new PromptTemplateSectionNode<StructuredDataPTH>({
+      semantic_type: 'context',
+      content: 'Context:',
+      children: [
+        'You are an expert business analyst for a consulting firm.',
+        'Your role is to analyze news articles and assess their potential impact across different business verticals.',
+        'Provide objective, data-driven assessments with clear reasoning.'
+      ]
+    });
+  }
+
+  // Override rules to be specific for impact analysis
+  protected get_Rules_Section(): PromptTemplateNode<StructuredDataPTH> {
+    return new PromptTemplateSectionNode<StructuredDataPTH>({
       semantic_type: 'rule',
       content: 'Analysis Rules:',
       children: [
-        new PromptTemplateListNode<IMPACT_PTH>({
+        new PromptTemplateListNode<StructuredDataPTH>({
           semantic_type: 'rule',
           children: [
-            `Focus on direct and indirect business impacts, not just general relevance`,
-            `Consider both immediate and potential long-term effects`,
-            `Base confidence scores on how clearly the article connects to each vertical`,
-            `If impact is unclear or minimal, don't hesitate to assign 'none' or 'low'`,
-            `Provide specific, actionable reasoning for each assessment`
+            'Focus on direct and indirect business impacts, not just general relevance',
+            'Consider both immediate and potential long-term effects',
+            'Base confidence scores on how clearly the article connects to each vertical',
+            'If impact is unclear or minimal, assign "none" or "low" impact level',
+            'Provide specific, actionable reasoning for each assessment',
+            'Use the following impact levels: none, low, medium, high, critical',
+            'Set confidence between 0.0 and 1.0 based on clarity of connection'
           ],
           list_label_function: (_req, _child, idx) => `${idx + 1}. `
         })
@@ -134,54 +173,32 @@ export class ImpactAnalysisPrompt extends Prompt<IMPACT_PTH> {
     });
   }
 
-  get_Verticals_Section(): PromptTemplateNode<IMPACT_PTH> {
-    return new PromptTemplateSectionNode<IMPACT_PTH>({
+  // Add business verticals section
+  get_Verticals_Section(): PromptTemplateNode<StructuredDataPTH> {
+    return new PromptTemplateSectionNode<StructuredDataPTH>({
       semantic_type: 'context',
-      content: 'Business Verticals to Analyze:',
+      content: 'Business Verticals:',
       children: [
-        new PromptTemplateListNode<IMPACT_PTH>({
+        new PromptTemplateListNode<StructuredDataPTH>({
           semantic_type: 'context',
           children: [
-            `**Healthcare**: Medical devices, pharmaceuticals, hospitals, health insurance, telemedicine, regulatory changes`,
-            `**Shipping & Logistics**: Supply chain, transportation, warehousing, delivery services, freight, port operations`,
-            `**Technology**: Software, hardware, cloud services, cybersecurity, AI/ML, telecommunications, fintech`
+            '**Healthcare**: Medical devices, pharmaceuticals, hospitals, health insurance, telemedicine, regulatory changes',
+            '**Shipping & Logistics**: Supply chain, transportation, warehousing, delivery services, freight, port operations',
+            '**Technology**: Software, hardware, cloud services, cybersecurity, AI/ML, telecommunications, fintech'
           ],
           list_label_function: () => '• '
         })
       ]
     });
   }
-
-  get_Schema_Section(): PromptTemplateNode<IMPACT_PTH> {
-    const schema_section = new PromptTemplateSectionNode<IMPACT_PTH>({
-      semantic_type: 'schema',
-      content: 'Output Schema:',
-      children: []
-    });
-
-    const schemaSetNode = new PromptTemplateSchemaSetNode<IMPACT_PTH>({
-      semantic_type: 'schema',
-      content: "",
-      children: []
-    });
-
-    // Add our schemas
-    schemaSetNode.addSchemas([
-      ImpactAnalysisSchema,
-      VerticalImpactSchema
-    ]);
-
-    schema_section.add_child(schemaSetNode);
-    return schema_section;
-  }
 }
 ```
 
-The prompt is organized into clear sections that guide the LLM through the analysis process.
+The prompt is organized into clear sections that guide the LLM through the analysis process. Note that we **don't** embed the article text in the Task section - that will be sent as a separate user message via `PromptInputText` in the bot's prompt group.
 
 ## Building the Analysis Bot
 
-Now we create the bot that wraps our prompt. In this basic example, the bot is primarily a thin wrapper - the real AI logic is in the prompt we just created:
+Now we create the bot that wraps our prompt. The key pattern here is to have a prompt group that ends with `PromptInputText` - this ensures the article text is sent as a user message rather than being embedded in the system prompt:
 
 ```typescript
 import {
@@ -190,7 +207,8 @@ import {
   BotTypeHelper,
   PromptTypeHelper,
   BotTryRequest,
-  PromptGroup
+  PromptGroup,
+  PromptInputText
 } from '@firebrandanalytics/ff-agent-sdk';
 import { ImpactAnalysisPrompt } from '../prompts/ImpactAnalysisPrompt.js';
 
@@ -214,9 +232,13 @@ export class ImpactAnalysisBot extends StructuredDataBot<
   constructor() {
     const prompt_group = new PromptGroup([
       { 
-        name: "impact_analysis_prompt", 
-        prompt: new ImpactAnalysisPrompt({ app_name: "News Impact Analyzer" })
+        name: "impact_analysis_system", 
+        prompt: new ImpactAnalysisPrompt({}, {}) as any
       },
+      {
+        name: "user_input",
+        prompt: new PromptInputText<IMPACT_PTH>({})
+      }
     ]);
 
     const config: StructuredDataBotConfig<typeof ImpactAnalysisSchema, IMPACT_PTH> = {
@@ -242,7 +264,19 @@ The `StructuredDataBot` automatically handles:
 - Validating the output against our schema
 - Retrying on errors
 
-For this basic example, we don't need custom validation or error handling - the framework handles it all.
+**Key Pattern: PromptInputText**
+
+Notice the prompt group has two entries:
+1. **System prompt** (`ImpactAnalysisPrompt`) - Contains instructions, rules, and schema
+2. **User input** (`PromptInputText`) - Sends the article text as a user message
+
+This follows the correct chat model pattern where:
+- System prompts contain **instructions**
+- User messages contain **content to analyze**
+
+Never embed the input directly in the system prompt using `request.input` - always use `PromptInputText` as the final entry in your prompt group.
+
+**Note on Type Casting:** The `as any` cast is a temporary workaround for type compatibility between `StructuredDataPrompt` and the bot's type helpers. This will be resolved in future SDK versions.
 
 ## Creating the Article Entity
 
@@ -438,14 +472,14 @@ This collection entity demonstrates the factory pattern - it creates new entitie
 
 ## Assembling the Agent Bundle
 
-Finally, let's create the main Agent Bundle that ties everything together:
+Finally, let's create the main Agent Bundle that ties everything together. The agent bundle is your application's entry point and exposes API endpoints for external consumers.
 
 ```typescript
 import {
   FFAgentBundle,
   logger,
   app_provider,
-  HealthStatus,
+  ApiEndpoint,
   FFConstructors
 } from '@firebrandanalytics/ff-agent-sdk';
 import { ArticleEntity } from './entities/ArticleEntity.js';
@@ -459,9 +493,14 @@ export const NewsAnalysisConstructors = {
 } as const;
 
 export class NewsAnalysisAgentBundle extends FFAgentBundle<any> {
+  private collectionId?: string;
+
   constructor() {
     super(
       {
+        // Note: This ID is randomly generated by ff-cli when creating a new agent bundle.
+        // Each bundle must have a unique UUID within your FireFoundry cluster.
+        // The ID shown here is just an example - your actual ID will be different.
         id: "c0000000-0000-0000-0001-000000000000",
         name: "NewsAnalysisService",
         description: "News article impact analysis service using FireFoundry"
@@ -474,146 +513,654 @@ export class NewsAnalysisAgentBundle extends FFAgentBundle<any> {
   override async init() {
     await super.init();
     logger.info("NewsAnalysisAgentBundle initialized!");
-    await this.create_sample_collection();
+    
+    // Create or retrieve the root collection
+    await this.ensure_collection();
+    
+    logger.info("✅ News Analysis service ready!");
+    logger.info("📡 API endpoints available:");
+    logger.info("   POST /analyze - Analyze a news article");
+    logger.info("   GET /article-status?articleId=<id> - Get analysis status");
+    logger.info("   GET /articles - List all analyzed articles");
   }
 
-  async check_readiness(): Promise<HealthStatus> {
-    try {
-      await this.entity_client.get_node_by_name("news-analysis-root");
-      return {
-        healthy: true,
-        message: "News analysis service ready",
-        details: { entity_client_status: "connected" }
-      };
-    } catch (error) {
-      return {
-        healthy: false,
-        message: "Database connection failed",
-        details: {
-          error: error instanceof Error ? error.message : "Unknown error",
-          entity_client_status: "disconnected"
-        }
-      };
-    }
-  }
-
-  private async create_sample_collection() {
+  private async ensure_collection() {
     try {
       const collection_name = "news-analysis-root";
       const existing = await this.entity_client.get_node_by_name(collection_name);
       
       if (existing) {
-        logger.info("News collection already exists:", existing.id);
-        this.print_usage_example(existing.id);
+        this.collectionId = existing.id;
+        logger.info("News collection found:", this.collectionId);
         return;
       }
 
-      const collection_dto = await this.entity_client.create_node({
+      // Create the root collection
+      const collection_dto = await this.entity_factory.create_entity_node({
         app_id: this.get_app_id(),
         name: collection_name,
         specific_type_name: 'NewsCollection',
         general_type_name: 'NewsCollection',
-        status: 'Completed',
+        status: 'Active',
         data: {}
       });
 
-      logger.info("Created news collection:", collection_dto.id);
-      this.print_usage_example(collection_dto.id);
+      this.collectionId = collection_dto.id;
+      logger.info("Created news collection:", this.collectionId);
     } catch (error) {
       logger.error("Failed to create collection:", error);
+      throw error;
     }
   }
 
-  private print_usage_example(collection_id: string) {
-    logger.info("✅ You can now analyze news articles with this API call:");
-    logger.info(`curl -X POST http://localhost:3001/invoke \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "entity_id": "${collection_id}",
-    "method_name": "analyze_article",
-    "args": [
-      "Breaking: Major tech company announces breakthrough in quantum computing that could revolutionize data processing across industries. The new quantum processor demonstrates unprecedented speed improvements in complex calculations, potentially impacting everything from drug discovery to logistics optimization.",
-      {
-        "source_url": "https://example.com/quantum-breakthrough",
-        "published_date": "2024-01-15"
+  /**
+   * Analyze a news article
+   * 
+   * This endpoint accepts a news article and returns structured impact analysis
+   * across three business verticals: healthcare, shipping/logistics, and technology.
+   */
+  @ApiEndpoint({ method: 'POST', route: 'analyze' })
+  async analyzeArticle(body: any = {}): Promise<any> {
+    try {
+      const { article_text, source_url, published_date } = body;
+
+      // Validate input
+      if (!article_text || article_text.trim().length === 0) {
+        throw new Error('article_text is required and cannot be empty');
       }
-    ]
-  }'`);
+
+      logger.info(`📰 Analyzing article (${article_text.length} characters)...`);
+
+      // Get the collection entity
+      if (!this.collectionId) {
+        throw new Error('Collection not initialized');
+      }
+
+      const collection = await this.entity_factory.get_entity(this.collectionId);
+
+      // Use the collection to analyze the article
+      const result = await collection.analyze_article(
+        article_text,
+        { source_url, published_date }
+      );
+
+      logger.info('✅ Analysis complete');
+
+      return {
+        success: true,
+        analysis: result,
+        message: 'Article analyzed successfully'
+      };
+    } catch (error) {
+      logger.error('Failed to analyze article:', error);
+      throw new Error(`Analysis failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get the status and results of an analyzed article
+   */
+  @ApiEndpoint({ method: 'GET', route: 'article-status' })
+  async getArticleStatus(query: any = {}): Promise<any> {
+    try {
+      const { articleId } = query;
+
+      if (!articleId) {
+        throw new Error('articleId query parameter is required');
+      }
+
+      // Get the article entity
+      const article = await this.entity_factory.get_entity(articleId);
+      const articleDto = await article.get_dto();
+
+      // Get the analysis result from node_io
+      const nodeIo = await this.entity_client.get_node_io(articleId);
+
+      return {
+        success: true,
+        article: {
+          id: articleDto.id,
+          status: articleDto.status,
+          article_text: articleDto.data.article_text,
+          source_url: articleDto.data.source_url,
+          published_date: articleDto.data.published_date,
+          created: articleDto.created,
+          updated: articleDto.updated
+        },
+        analysis: nodeIo?.output || null,
+        message: articleDto.status === 'Completed' 
+          ? 'Analysis complete' 
+          : 'Analysis in progress'
+      };
+    } catch (error) {
+      logger.error('Failed to get article status:', error);
+      throw new Error(`Failed to retrieve article: ${error.message}`);
+    }
+  }
+
+  /**
+   * List all analyzed articles
+   */
+  @ApiEndpoint({ method: 'GET', route: 'articles' })
+  async listArticles(query: any = {}): Promise<any> {
+    try {
+      const { status, limit = '10' } = query;
+      const limitNum = parseInt(limit as string, 10);
+
+      // Build search criteria
+      const criteria: any = { specific_type_name: 'ArticleEntity' };
+      if (status) {
+        criteria.status = status;
+      }
+
+      // Search for articles
+      const result = await this.entity_client.search_nodes(
+        criteria,
+        { created: 'desc' },
+        { limit: limitNum }
+      );
+
+      // Transform results
+      const articles = result.result.map(dto => ({
+        id: dto.id,
+        status: dto.status,
+        article_excerpt: dto.data.article_text?.substring(0, 100) + '...',
+        source_url: dto.data.source_url,
+        published_date: dto.data.published_date,
+        created: dto.created
+      }));
+
+      return {
+        success: true,
+        articles,
+        total: result.total,
+        message: `Found ${articles.length} article(s)`
+      };
+    } catch (error) {
+      logger.error('Failed to list articles:', error);
+      throw new Error(`Failed to list articles: ${error.message}`);
+    }
   }
 }
 ```
 
-## Complete Working Example
+### Key Concepts in the Agent Bundle
 
-Here's how all the pieces work together:
+**1. The `@ApiEndpoint` Decorator**
 
-1. **Input**: A news article about quantum computing breakthroughs
-2. **NewsCollection.analyze_article()**: Creates an ArticleEntity with the article text
-3. **ArticleEntity**: Stores the article and connects to ImpactAnalysisBot
-4. **ImpactAnalysisBot**: Uses the LLM to analyze impact across verticals
-5. **ImpactAnalysisPrompt**: Structures the LLM request with context and rules
-6. **Output**: Structured analysis with impact levels, confidence scores, and reasoning
+The `@ApiEndpoint` decorator exposes methods as HTTP endpoints that external systems can call:
 
-Example output:
-```json
-{
-  "article_summary": "Major tech company announces quantum computing breakthrough with unprecedented processing speeds, potentially transforming multiple industries.",
-  "healthcare": {
-    "impact_level": "high",
-    "confidence": 0.8,
-    "reasoning": "Quantum computing could accelerate drug discovery and medical research",
-    "key_factors": ["drug discovery acceleration", "complex medical calculations"]
-  },
-  "shipping_logistics": {
-    "impact_level": "medium", 
-    "confidence": 0.7,
-    "reasoning": "Optimization algorithms could improve route planning and supply chain efficiency",
-    "key_factors": ["logistics optimization", "complex calculations"]
-  },
-  "technology": {
-    "impact_level": "critical",
-    "confidence": 0.9,
-    "reasoning": "Direct disruption to computing industry with new processing capabilities",
-    "key_factors": ["quantum processor", "data processing revolution"]
-  },
-  "overall_significance": "high"
+```typescript
+@ApiEndpoint({ method: 'POST', route: 'analyze' })
+async analyzeArticle(body: any = {}): Promise<any> { /* ... */ }
+```
+
+This creates a `POST /analyze` endpoint that consumers can call directly, without needing to know about internal entity IDs.
+
+**2. Initialization with `init()`**
+
+The `init()` method runs once when your bundle starts:
+- Creates bootstrap entities (like our root collection)
+- Sets up application state
+- Validates connections to platform services
+
+**3. Clean API Design**
+
+Rather than exposing entity IDs and forcing consumers to understand your entity graph, you provide clean REST-style APIs that hide implementation details:
+- `POST /analyze` - Analyze an article
+- `GET /article-status?articleId=<id>` - Check status  
+- `GET /articles` - List articles
+
+**4. Error Handling**
+
+Always validate inputs and provide clear error messages:
+```typescript
+if (!article_text || article_text.trim().length === 0) {
+  throw new Error('article_text is required and cannot be empty');
 }
 ```
 
+The framework automatically catches these errors and returns appropriate HTTP error responses.
+
+## How It All Works Together
+
+Here's the complete data flow when analyzing a news article:
+
+```
+External Client                                                       
+     │                                                                
+     │ POST /analyze                                                 
+     │ { article_text: "..." }                                       
+     ▼                                                                
+NewsAnalysisAgentBundle                                              
+     │                                                                
+     │ @ApiEndpoint                                                  
+     ├─→ analyzeArticle()                                            
+     │                                                                
+     ├─→ Get NewsCollection entity                                   
+     │                                                                
+     ├─→ collection.analyze_article()                                
+     │        │                                                       
+     │        ├─→ Create ArticleEntity                               
+     │        │                                                       
+     │        ├─→ article.run()                                      
+     │        │        │                                              
+     │        │        ├─→ get_bot_request_args()                    
+     │        │        │   (extracts article_text from entity)       
+     │        │        │                                              
+     │        │        ├─→ ImpactAnalysisBot                         
+     │        │        │        │                                     
+     │        │        │        ├─→ ImpactAnalysisPrompt             
+     │        │        │        │   (formats LLM request)            
+     │        │        │        │                                     
+     │        │        │        ├─→ Broker Service (LLM call)        
+     │        │        │        │                                     
+     │        │        │        └─→ Validate with Zod schema         
+     │        │        │                                              
+     │        │        └─→ Returns IMPACT_ANALYSIS_OUTPUT            
+     │        │                                                       
+     │        └─→ Returns result                                     
+     │                                                                
+     └─→ Return { success: true, analysis: {...} }                   
+```
+
+**Example Response:**
+
+When you analyze an article about quantum computing breakthroughs, the system returns:
+
+```json
+{
+  "success": true,
+  "analysis": {
+    "article_summary": "Major tech company announces quantum computing breakthrough with unprecedented processing speeds, potentially transforming multiple industries.",
+    "healthcare": {
+      "impact_level": "high",
+      "confidence": 0.8,
+      "reasoning": "Quantum computing could accelerate drug discovery and medical research",
+      "key_factors": ["drug discovery acceleration", "complex medical calculations"]
+    },
+    "shipping_logistics": {
+      "impact_level": "medium", 
+      "confidence": 0.7,
+      "reasoning": "Optimization algorithms could improve route planning and supply chain efficiency",
+      "key_factors": ["logistics optimization", "complex calculations"]
+    },
+    "technology": {
+      "impact_level": "critical",
+      "confidence": 0.9,
+      "reasoning": "Direct disruption to computing industry with new processing capabilities",
+      "key_factors": ["quantum processor", "data processing revolution"]
+    },
+    "overall_significance": "high"
+  },
+  "message": "Article analyzed successfully"
+}
+```
+
+## Deploying Your Agent Bundle
+
+Before you can consume your agent bundle, you need to deploy it to a FireFoundry cluster. This tutorial uses minikube for local deployment.
+
+### Prerequisites
+
+- Minikube with FireFoundry installed and running
+- `ff-cli` installed (FireFoundry CLI tool)
+- GitHub Personal Access Token (for accessing FireFoundry packages)
+
+### Deployment Steps
+
+**1. Navigate to your monorepo root**
+
+The `ff-cli` command works from the root of your agent bundle monorepo:
+
+```bash
+cd ff-agent-bundle-examples  # Your monorepo root
+```
+
+**2. Build the Docker image**
+
+Build your agent bundle into a Docker image. For minikube, use the `--profile minikube` flag:
+
+```bash
+export GITHUB_TOKEN=your_github_token
+ff-cli ops build news-analysis --profile minikube
+```
+
+The GITHUB_TOKEN is required to access FireFoundry's private npm packages during the Docker build.
+
+**Output:**
+```
+Building Docker image for agent bundle: news-analysis
+Using minikube profile: minikube
+- Starting Docker build...
+✔ Docker image built successfully: news-analysis:latest
+
+Build completed successfully!
+```
+
+**3. Install to Kubernetes**
+
+Deploy the agent bundle to your minikube cluster:
+
+```bash
+ff-cli ops install news-analysis
+```
+
+This command:
+- Creates a Helm release in the `ff-dev` namespace
+- Deploys the agent bundle pod
+- Configures Kong Gateway routing
+- Waits for the pod to become ready
+
+**Output:**
+```
+Installing agent bundle: news-analysis
+Installing Helm release "news-analysis"...
+Helm release "news-analysis" installed successfully
+Deployment "news-analysis" is ready
+
+Pod Status:
+  news-analysis-agent-bundle-xxxxx: Running (Ready)
+```
+
+**4. Upgrade after changes**
+
+When you make code changes and rebuild, upgrade the deployment:
+
+```bash
+ff-cli ops build news-analysis --profile minikube
+ff-cli ops upgrade news-analysis
+```
+
+**5. Access your agent bundle**
+
+Set up port forwarding to the Kong Gateway:
+
+```bash
+kubectl port-forward -n ff-control-plane svc/firefoundry-control-kong-proxy 8080:80
+```
+
+Now you can access your agent bundle at:
+```
+http://localhost:8080/agents/ff-dev/news-analysis
+```
+
+**6. Test the deployment**
+
+```bash
+# Health check
+curl http://localhost:8080/agents/ff-dev/news-analysis/health/ready
+
+# Info endpoint
+curl http://localhost:8080/agents/ff-dev/news-analysis/info
+
+# Custom API endpoint (note the /api/ prefix)
+curl -X POST http://localhost:8080/agents/ff-dev/news-analysis/api/analyze \
+  -H "Content-Type: application/json" \
+  -d '{
+    "article_text": "Your news article text here..."
+  }'
+```
+
+**Important:** Custom API endpoints decorated with `@ApiEndpoint` are accessed via the `/api/` prefix: `/agents/{namespace}/{bundle-name}/api/{endpoint-route}`
+
+### Viewing Logs
+
+To debug issues or monitor your agent bundle:
+
+```bash
+# View real-time logs
+kubectl logs -n ff-dev -l app.kubernetes.io/instance=news-analysis -f
+
+# View recent logs
+kubectl logs -n ff-dev -l app.kubernetes.io/instance=news-analysis --tail=100
+```
+
+### Common Issues
+
+**Build fails with "GITHUB_TOKEN not set":**
+- Set the token: `export GITHUB_TOKEN=your_github_token`
+- The token needs read access to FireFoundry's private packages
+
+**"Endpoint not found" when calling custom endpoints:**
+- Remember to use the `/api/` prefix for `@ApiEndpoint` decorated methods
+- Correct: `/api/analyze`
+- Incorrect: `/analyze`
+
+**Pod fails to start:**
+- Check logs: `kubectl logs -n ff-dev -l app.kubernetes.io/instance=news-analysis`
+- Verify database connection in secrets.yaml
+- Ensure LLM broker is accessible
+
+---
+
+## Consuming Your Agent Bundle
+
+Now that your agent bundle is deployed, let's see how external applications consume it. The **FireFoundry SDK (ff-sdk)** is the recommended way to interact with deployed agent bundles.
+
+### Installing the FF SDK
+
+```bash
+npm install @firebrandanalytics/ff-sdk
+```
+
+### Basic Usage
+
+Create a client and call your API endpoints:
+
+```typescript
+import { RemoteAgentBundleClient } from '@firebrandanalytics/ff-sdk';
+
+// Create client (assumes bundle is deployed behind Kong gateway)
+const client = new RemoteAgentBundleClient(
+  'https://api.yourcompany.com/agents/ff-dev/news-analysis',  // Your bundle's URL
+  {
+    api_key: process.env.API_KEY,  // API key for authentication
+    timeout: 60000,  // 60 second timeout
+  }
+);
+
+// Note: The URL follows the pattern: /agents/{environment}/{bundle-name}
+// The environment name corresponds to your FireFoundry deployment environment.
+//
+// Examples by deployment:
+// - Minikube: http://localhost:8080/agents/ff-dev/news-analysis
+//             (port 8080 from: kubectl port-forward -n ff-control-plane 
+//              svc/firefoundry-control-kong-proxy 8080:80)
+// - Cloud cluster: https://api.yourcompany.com/agents/production/news-analysis
+//                  (URL determined by your ingress controller configuration)
+
+// Analyze an article
+async function analyzeNewsArticle() {
+  try {
+    // Call your @ApiEndpoint route
+    const result = await client.call_api_endpoint('analyze', {
+      method: 'POST',
+      body: {
+        article_text: `Breaking: Major tech company announces breakthrough in quantum 
+computing that could revolutionize data processing across industries. The new quantum 
+processor demonstrates unprecedented speed improvements in complex calculations, 
+potentially impacting everything from drug discovery to logistics optimization.`,
+        source_url: 'https://example.com/quantum-breakthrough',
+        published_date: '2024-01-15'
+      }
+    });
+
+    console.log('Analysis complete:', result.analysis);
+    return result;
+  } catch (error) {
+    console.error('Analysis failed:', error);
+    throw error;
+  }
+}
+
+// Check status of an article
+async function checkArticleStatus(articleId: string) {
+  const status = await client.call_api_endpoint('article-status', {
+    query: { articleId }
+  });
+
+  console.log('Article status:', status.article.status);
+  console.log('Analysis:', status.analysis);
+  return status;
+}
+
+// List all articles
+async function listRecentArticles() {
+  const result = await client.call_api_endpoint('articles', {
+    query: { limit: '5' }
+  });
+
+  console.log(`Found ${result.total} articles`);
+  result.articles.forEach(article => {
+    console.log(`- ${article.id}: ${article.status}`);
+  });
+
+  return result;
+}
+
+// Run the example
+async function main() {
+  // Analyze an article
+  const analysis = await analyzeNewsArticle();
+  
+  // The response includes the article ID (embedded in the entity graph)
+  // You can extract it from the collection to check status later
+  
+  // List recent analyses
+  await listRecentArticles();
+}
+
+main();
+```
+
+### Type Safety with Shared Types
+
+For production applications, create a shared types package for compile-time type safety:
+
+```typescript
+// shared-types/src/index.ts
+export interface IMPACT_ANALYSIS_OUTPUT {
+  article_summary: string;
+  healthcare: VerticalImpact;
+  shipping_logistics: VerticalImpact;
+  technology: VerticalImpact;
+  overall_significance: 'low' | 'medium' | 'high';
+}
+
+export interface VerticalImpact {
+  impact_level: 'none' | 'low' | 'medium' | 'high' | 'critical';
+  confidence: number;
+  reasoning: string;
+  key_factors: string[];
+}
+
+// In your consumer application
+import { RemoteAgentBundleClient } from '@firebrandanalytics/ff-sdk';
+import type { IMPACT_ANALYSIS_OUTPUT } from '@my-workspace/shared-types';
+
+const result = await client.call_api_endpoint<{ 
+  success: boolean; 
+  analysis: IMPACT_ANALYSIS_OUTPUT;
+}>('analyze', {
+  method: 'POST',
+  body: { article_text: '...' }
+});
+
+// TypeScript now knows the exact shape of result.analysis
+console.log(result.analysis.healthcare.impact_level); // ✅ Type-safe!
+```
+
+### Why Use FF SDK?
+
+The FF SDK provides:
+- ✅ **Automatic authentication** with API keys
+- ✅ **Built-in retry logic** for failed requests
+- ✅ **Type safety** with TypeScript generics
+- ✅ **Error handling** with structured `FFError` objects
+- ✅ **Streaming support** for long-running operations
+- ✅ **Binary uploads/downloads** for file handling
+- ✅ **Request correlation** for distributed tracing
+
+**Important:** The FF SDK works with agent bundles deployed behind Kong Gateway (production/staging). For local development and debugging, you may need to use direct HTTP calls (see the [Agent Bundle Tutorial](./core/agent_bundle_tutorial.md#consuming-your-agent-bundle) for details).
+
+### Next Steps for Consumption
+
+For more advanced consumption patterns, see:
+- **[FF SDK Tutorial](../ff_sdk/ff_sdk_tutorial.md)** - Complete guide to the FireFoundry SDK
+- **[News Analysis Consumer](../ff_sdk/news_analysis_consumer.md)** - Build a CLI tool using ff-sdk
+- **[Express Middleware Tutorial](../ff_sdk/express_middleware_tutorial.md)** - Build a REST API wrapper
+
+---
+
 ## Key Patterns and Takeaways
 
-The FireFoundry Agent Bundle architecture provides several key benefits:
+You've now built a complete AI-powered application using the FireFoundry platform! Let's review the key architectural patterns:
 
 **1. Separation of Concerns**
-- Entities handle data structure and persistence
-- Bots handle AI-powered logic
-- Prompts handle LLM communication
+- **Prompts** define AI instructions and output structure
+- **Bots** execute AI tasks with validation and error handling
+- **Entities** manage state and persistence
+- **Agent Bundles** expose clean APIs to external systems
 
-**2. Type Safety**
-- Schema-driven development with Zod
-- TypeScript type helpers throughout
-- Compile-time validation
+**2. Type Safety Throughout**
+- Zod schemas define structure and generate TypeScript types
+- Type helpers ensure compile-time correctness
+- Shared types enable type-safe consumption
 
-**3. Composability**  
-- Entities can be connected via edges
-- Bots can be reused across entities
-- Prompts can be modular and reusable
+**3. Clean API Design**
+- `@ApiEndpoint` hides internal complexity
+- REST-style routes for easy integration
+- Clear request/response contracts
 
-**4. Persistence**
-- Entity relationships are automatically persisted
-- Working memory stores intermediate results
-- Full audit trail of operations
+**4. Zero-Code Persistence**
+- Entity graph automatically persists state
+- Relationships are first-class
+- No manual database code required
 
-**5. Scalability**
-- Background job processing
-- Resumable computations
-- Progress tracking and monitoring
+**5. Production-Ready**
+- Built-in error handling and validation
+- Automatic retries and recovery
+- Observability and monitoring built-in
 
-This architecture shines when building applications that require:
-- Complex AI workflows with multiple steps
-- Persistent state management
-- Structured data extraction and analysis
-- Composable business logic
-- Audit trails and monitoring
+### When to Use FireFoundry
 
-The entity-bot separation pattern makes it easy to test, debug, and extend your AI-powered applications while maintaining clean architectural boundaries.
+This architecture excels when you need:
+- ✅ **Structured data extraction** from unstructured input
+- ✅ **Multi-step AI workflows** with complex logic
+- ✅ **Persistent state** across operations
+- ✅ **Type-safe contracts** between services
+- ✅ **Composable AI behaviors** that can be reused
+- ✅ **Audit trails** and observability
+- ✅ **Enterprise-grade** reliability and security
+
+### What You've Learned
+
+In this tutorial, you've:
+1. ✅ Created a **Zod schema** for structured LLM output
+2. ✅ Built a **Prompt** with clear AI instructions
+3. ✅ Implemented a **Bot** using `StructuredDataBot`
+4. ✅ Created **Entities** for state management
+5. ✅ Assembled an **Agent Bundle** with API endpoints
+6. ✅ **Deployed** your bundle to Kubernetes using ff-cli
+7. ✅ Learned how to **consume** your bundle with ff-sdk
+
+### Continue Your Journey
+
+**Deep Dives:**
+- [Prompting Tutorial](./core/prompting_tutorial.md) - Advanced prompt engineering
+- [Bot Tutorial](./core/bot_tutorial.md) - Custom bots with tools and validation
+- [Agent Bundle Tutorial](./core/agent_bundle_tutorial.md) - Advanced API patterns
+
+**Reference Guides:**
+- [Prompting Guide](./core/prompting.md) - Complete prompting framework
+- [Bots Guide](./core/bots.md) - Comprehensive bot development
+- [Entities Guide](./core/entities.md) - Entity modeling and relationships
+- [Agent Bundles Guide](./core/agent_bundles.md) - Production bundle patterns
+
+**Advanced Topics:**
+- [Workflow Orchestration](./feature_guides/workflow_orchestration_guide.md) - Multi-step workflows
+- [Waitable Entities](./feature_guides/waitable_guide.md) - Human-in-the-loop patterns
+- [Graph Traversal](./feature_guides/graph_traversal.md) - Complex entity relationships
+
+Happy building with FireFoundry! 🚀
