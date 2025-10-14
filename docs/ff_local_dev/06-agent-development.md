@@ -30,6 +30,7 @@ cd talespring-demo
 ```
 
 **What you get**:
+
 - Complete monorepo structure with Turborepo and pnpm
 - Working talespring agent in `apps/talespring/`
 - Pre-configured Dockerfile for containerization
@@ -95,13 +96,13 @@ Edit `values.local.yaml` to configure for local minikube deployment. Update thes
 
 ```yaml
 # Local minikube values for talespring
-bundleName: "talespring"  # IMPORTANT: Must match your service name
+bundleName: "talespring" # IMPORTANT: Must match your service name
 
 # Image configuration
 image:
   repository: talespring
   tag: "latest"
-  pullPolicy: Never  # Use local Docker image
+  pullPolicy: Always
 
 # Service configuration
 service:
@@ -110,7 +111,6 @@ service:
     enabled: true
     port: 3001
     targetPort: 3001
-
 # ... rest of config remains the same
 ```
 
@@ -155,6 +155,7 @@ curl -s http://localhost:8001/routes | jq '.data[] | {name, paths}'
 You should see a route named `ff-agent-ff-dev-talespring-route` with path `/agents/ff-dev/talespring`.
 
 **If the route shows wrong path** (like `/agents/ff-dev/my-bundle`):
+
 1. You forgot to set `bundleName` in values.local.yaml
 2. Delete the wrong Kong route: `curl -X DELETE http://localhost:8001/routes/<wrong-route-name>`
 3. Update values.local.yaml with `bundleName: "talespring"`
@@ -203,9 +204,11 @@ If you don't have Postman installed:
 Download and import the pre-built collection:
 
 1. **Download the collection**: [talespring-postman-collection.json](talespring-postman-collection.json)
+
    - Right-click and "Save Link As..." or download directly
 
 2. **Import into Postman**:
+
    - Open Postman
    - Click **Import** button (top left)
    - Drag and drop the downloaded JSON file, or click **Upload Files**
@@ -218,11 +221,13 @@ Download and import the pre-built collection:
 Set up the base URL to point to your local Kong gateway:
 
 1. **Create a new environment**:
+
    - Click the **Environments** tab (left sidebar)
    - Click **+** to create new environment
    - Name it "Local Minikube"
 
 2. **Add variables**:
+
    - Variable: `BASE_URL`
    - Initial Value: `http://localhost:8080/agents/ff-dev/talespring`
    - Current Value: `http://localhost:8080/agents/ff-dev/talespring`
@@ -236,28 +241,33 @@ Set up the base URL to point to your local Kong gateway:
 The collection includes organized folders with all talespring endpoints:
 
 **Health & Info**:
+
 - `GET /health/ready` - Health check
 - `GET /health/live` - Liveness probe
 - `GET /info` - Service metadata
 
 **Story Generation Workflow**:
+
 1. `POST /createStoryRequest` - Start story generation
    - Auto-captures `workflowId` and `storyRequestId`
 2. `GET /workflow/:workflowId/status` - Poll for completion
 3. `GET /story/:storyRequestId` - Retrieve generated story
 
 **Direct Invoke (Advanced)**:
+
 - `POST /invoke` - Direct entity method invocation
 
 ### Quick Test Flow
 
 1. **Check health**:
+
    - Open "Health & Info" folder
    - Click "Health Check (Readiness)"
    - Click **Send**
    - You should see: `{"status":"healthy","timestamp":"..."}`
 
 2. **Generate a story**:
+
    - Open "Story Generation Workflow" folder
    - Click "Create Story Request"
    - Review the request body (pre-filled with example data)
@@ -265,6 +275,7 @@ The collection includes organized folders with all talespring endpoints:
    - The response will auto-populate `workflowId` and `storyRequestId`
 
 3. **Check workflow status**:
+
    - Click "Get Workflow Status"
    - Click **Send**
    - Wait until `status: "completed"`
@@ -291,6 +302,7 @@ Edit the request body in "Create Story Request" to experiment:
 ### Troubleshooting Postman
 
 **Connection refused errors**:
+
 ```bash
 # Verify Kong port-forward is running
 ps aux | grep port-forward
@@ -300,10 +312,12 @@ kubectl port-forward -n ff-control-plane svc/firefoundry-control-kong-proxy 8080
 ```
 
 **404 Not Found**:
+
 - Check that `BASE_URL` environment variable is set correctly
 - Verify the talespring route exists: `curl -s http://localhost:8001/routes | jq '.data[] | {name, paths}'`
 
 **500 Internal Server Error**:
+
 - Check pod logs: `kubectl logs -n ff-dev -l app.kubernetes.io/instance=talespring`
 - Verify core services are running: `kubectl get pods -n ff-dev`
 
@@ -320,6 +334,7 @@ kubectl logs -n ff-dev <pod-name>
 ```
 
 Common issues:
+
 - **ImagePullBackOff**: Image not found - rebuild with `eval $(minikube docker-env)` first
 - **CrashLoopBackOff**: Configuration error - check secrets.yaml and values.local.yaml
 - **Pending**: Insufficient resources - check `minikube status` and resource allocation
@@ -332,6 +347,7 @@ kubectl logs -n ff-control-plane -l app.kubernetes.io/component=agent-bundle-con
 ```
 
 Common causes:
+
 - Service doesn't have required labels (chart should add these automatically)
 - Agent controller not running - check `kubectl get pods -n ff-control-plane`
 - Service discovery lag - wait 10-20 seconds after deployment
@@ -346,7 +362,7 @@ If you see `"No API key found in request"`:
    ```yaml
    agentBundleController:
      authentication:
-       enabled: false  # Should be false for local dev
+       enabled: false # Should be false for local dev
    ```
 4. If changed, upgrade control plane: `helm upgrade firefoundry-control ...`
 5. Restart agent controller to apply changes
@@ -362,6 +378,7 @@ You've successfully:
 - Tested the agent through the API gateway
 
 **Next Steps**:
+
 - **[Update Agent Bundles](08-updating-agent-bundles.md)** - Make changes and redeploy
 - Explore the talespring source code in `apps/talespring/src/` to understand Entity-Bot-Prompt patterns
 - Review entity definitions, bot implementations, and prompt composition
