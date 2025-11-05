@@ -42,6 +42,7 @@ These tutorials walk you through building a complete end-to-end application usin
 ### Foundation
 
 **Prerequisites:**
+
 - Understanding of the [FireFoundry Platform](./docs/README.md)
 - Completed the [AgentSDK Getting Started Guide](./docs/sdk/agent_sdk/agent_sdk_getting_started.md)
 - News Analysis Agent Bundle deployed (locally or staging)
@@ -51,6 +52,7 @@ These tutorials walk you through building a complete end-to-end application usin
 #### 1. [FF SDK Tutorial: Getting Started](./docs/sdk/ff_sdk/ff_sdk_getting_started.md)
 
 **What you'll learn:**
+
 - Core concepts of the FF SDK
 - Setting up the RemoteAgentBundleClient
 - Invoking entity methods with type safety
@@ -64,15 +66,21 @@ These tutorials walk you through building a complete end-to-end application usin
 **Time:** 30-45 minutes
 
 **Key takeaways:**
-```typescript
-import { RemoteAgentBundleClient } from '@firebrandanalytics/ff-sdk';
 
-const client = new RemoteAgentBundleClient('http://localhost:3001', {
-  api_key: 'your-api-key',
-  timeout: 60000
+```typescript
+import { RemoteAgentBundleClient } from "@firebrandanalytics/ff-sdk";
+
+const client = new RemoteAgentBundleClient("http://localhost:3001", {
+  api_key: "your-api-key",
+  timeout: 60000,
 });
 
-const result = await client.invoke_entity_method(entityId, 'method_name', arg1, arg2);
+const result = await client.invoke_entity_method(
+  entityId,
+  "method_name",
+  arg1,
+  arg2
+);
 ```
 
 ---
@@ -80,6 +88,7 @@ const result = await client.invoke_entity_method(entityId, 'method_name', arg1, 
 #### 2. [Consuming the News Analysis Agent Bundle](./docs/sdk/ff_sdk/news_analysis_consumer.md)
 
 **What you'll learn:**
+
 - Practical application of FF SDK patterns
 - Building a complete CLI tool with yargs
 - Working with shared types in a monorepo
@@ -91,6 +100,7 @@ const result = await client.invoke_entity_method(entityId, 'method_name', arg1, 
 **Time:** 45-60 minutes
 
 **Key takeaways:**
+
 ```bash
 # Analyze a single article
 npm start analyze ./article.txt
@@ -107,6 +117,7 @@ npm start history -l 10
 #### 3. [Express.js Middleware with WebSocket Streaming](./docs/sdk/ff_sdk/express_middleware_tutorial.md)
 
 **What you'll learn:**
+
 - Building a REST API middleware layer
 - WebSocket connection management
 - Real-time progress streaming
@@ -118,6 +129,7 @@ npm start history -l 10
 **Time:** 60-90 minutes
 
 **Architecture:**
+
 ```
 Client Apps → Express Middleware → Agent Bundle
               ↓
@@ -125,24 +137,26 @@ Client Apps → Express Middleware → Agent Bundle
 ```
 
 **Key takeaways:**
+
 ```typescript
 // REST endpoint
-app.post('/api/analyze', async (req, res) => {
+app.post("/api/analyze", async (req, res) => {
   const result = await analysisService.analyzeArticle(req.body.article);
   res.json({ success: true, data: result });
 });
 
 // WebSocket streaming
-ws.on('message', async (data) => {
+ws.on("message", async (data) => {
   await handleAnalyze(ws, message, wsManager);
 });
 ```
 
 ---
 
-#### 4. [Next.js GUI for News Analysis](./docs/sdk/ff_sdk/nextjs_gui_tutorial.md)
+#### 4. [Next.js GUI for News Analysis](./docs/sdk/ff_sdk/nextjs_news_analysis_gui.md)
 
 **What you'll learn:**
+
 - Building a web interface with Next.js
 - Form validation and loading states
 - Displaying structured analysis results
@@ -154,15 +168,52 @@ ws.on('message', async (data) => {
 **Time:** 45-60 minutes
 
 **Key takeaways:**
+
 ```typescript
 // Type-safe API calls
-import type { IMPACT_ANALYSIS_OUTPUT } from '@my-workspace/shared-types';
+import type { IMPACT_ANALYSIS_OUTPUT } from "@my-workspace/shared-types";
 
 const result = await analyzeArticle({
   article: articleText,
-  metadata: { source_url: sourceUrl }
+  metadata: { source_url: sourceUrl },
 });
 ```
+
+---
+
+#### 5. [Frontend Development Guide for Agent Bundles](./docs/sdk/ff_sdk/frontend_development_guide.md) ⭐ **NEW**
+
+**What you'll learn:**
+
+- Using `RemoteAgentBundleClient` and `RemoteEntityClient` correctly
+- Setting up server-side configuration in Next.js
+- Common patterns: creating entities, file uploads, entity queries
+- When to use each client type
+- Architecture patterns: Next.js API routes as proxy
+- Error handling and best practices
+
+**Who it's for:** Coding agents building frontends for FireFoundry agent bundles
+
+**Time:** 30-45 minutes
+
+**Key takeaways:**
+
+```typescript
+// Server-side configuration
+import { getAgentBundleClient, getEntityClient } from "@/lib/serverConfig";
+
+// In Next.js API route (server-side only)
+const bundleClient = getAgentBundleClient();
+const entityClient = getEntityClient();
+
+// Call agent bundle endpoint
+await bundleClient.call_api_endpoint("create-report", { method: "POST", body });
+
+// Query entity graph
+await entityClient.search_nodes_scoped(criteria, sort, pagination);
+```
+
+**Why this guide:** Specifically written for coding agents who need to understand the two client types (`RemoteAgentBundleClient` vs `RemoteEntityClient`) and when to use each. Emphasizes using official FireFoundry clients instead of generic HTTP clients.
 
 ---
 
@@ -186,7 +237,7 @@ Choose your path based on your role and goals:
 
 **Goal:** Create user interfaces for agent bundle features
 
-1. Skim [FF SDK Tutorial](#1-ff-sdk-tutorial-getting-started) (Understand concepts)
+1. Read [Frontend Development Guide](#5-frontend-development-guide-for-agent-bundles--new) (Core concepts and patterns)
 2. Jump to [Next.js GUI](#4-nextjs-gui-for-news-analysis) (Build the UI)
 3. Reference [Express Middleware](#3-expressjs-middleware-with-websocket-streaming) (Add real-time features)
 
@@ -242,6 +293,7 @@ my-app-monorepo/
 **Why:** Maintain type safety between agent bundle and consumers
 
 **Example:**
+
 ```typescript
 // packages/shared-types/src/index.ts
 export interface IMPACT_ANALYSIS_OUTPUT {
@@ -249,7 +301,7 @@ export interface IMPACT_ANALYSIS_OUTPUT {
   healthcare: VerticalImpact;
   shipping_logistics: VerticalImpact;
   technology: VerticalImpact;
-  overall_significance: 'low' | 'medium' | 'high';
+  overall_significance: "low" | "medium" | "high";
 }
 
 // Used in agent bundle, CLI, API, and web UI
@@ -307,18 +359,21 @@ pnpm build
 ### 4. Choose Your Consumer
 
 **Option A: CLI Tool**
+
 ```bash
 cd packages/cli-tool
 # Follow Tutorial 2
 ```
 
 **Option B: API Middleware**
+
 ```bash
 cd packages/api
 # Follow Tutorial 3
 ```
 
 **Option C: Web UI**
+
 ```bash
 cd packages/web-ui
 # Follow Tutorial 4
@@ -345,6 +400,7 @@ docs/sdk/ff_sdk/examples/
 ### Common Issues
 
 **Connection Errors**
+
 ```bash
 # Check agent bundle is running
 curl http://localhost:3001/health
@@ -358,6 +414,7 @@ curl -H "Authorization: Bearer $AGENT_BUNDLE_API_KEY" \
 ```
 
 **Type Errors**
+
 ```bash
 # Rebuild shared types
 cd packages/shared-types
@@ -369,11 +426,12 @@ pnpm dev
 ```
 
 **Timeout Errors**
+
 ```typescript
 // Increase timeout in client
 const client = new RemoteAgentBundleClient(url, {
   api_key: apiKey,
-  timeout: 120000  // 2 minutes
+  timeout: 120000, // 2 minutes
 });
 ```
 
@@ -384,11 +442,13 @@ const client = new RemoteAgentBundleClient(url, {
 ### 1. Type Safety
 
 ✅ **Do:** Use shared types from workspace package
+
 ```typescript
-import type { IMPACT_ANALYSIS_OUTPUT } from '@my-workspace/shared-types';
+import type { IMPACT_ANALYSIS_OUTPUT } from "@my-workspace/shared-types";
 ```
 
 ❌ **Don't:** Duplicate types across packages
+
 ```typescript
 // Don't do this in multiple places
 interface AnalysisOutput { ... }
@@ -397,16 +457,18 @@ interface AnalysisOutput { ... }
 ### 2. Error Handling
 
 ✅ **Do:** Provide clear, actionable error messages
+
 ```typescript
 try {
   const result = await analyzeArticle(text);
 } catch (error) {
-  console.error('Analysis failed:', error.message);
+  console.error("Analysis failed:", error.message);
   // Show user-friendly message
 }
 ```
 
 ❌ **Don't:** Swallow errors silently
+
 ```typescript
 try {
   await analyzeArticle(text);
@@ -418,30 +480,34 @@ try {
 ### 3. Configuration Management
 
 ✅ **Do:** Use environment variables
+
 ```typescript
 const config = {
   url: process.env.AGENT_BUNDLE_URL,
-  apiKey: process.env.AGENT_BUNDLE_API_KEY
+  apiKey: process.env.AGENT_BUNDLE_API_KEY,
 };
 ```
 
 ❌ **Don't:** Hardcode configuration
+
 ```typescript
-const url = 'http://localhost:3001';  // Don't hardcode
-const apiKey = 'my-secret-key';       // Never commit secrets
+const url = "http://localhost:3001"; // Don't hardcode
+const apiKey = "my-secret-key"; // Never commit secrets
 ```
 
 ### 4. Loading States
 
 ✅ **Do:** Show progress feedback
+
 ```typescript
 setLoading(true);
-setStatus('Analyzing article...');
+setStatus("Analyzing article...");
 // ... perform analysis
 setLoading(false);
 ```
 
 ❌ **Don't:** Leave users wondering
+
 ```typescript
 // No feedback during long operations
 await analyzeArticle(text);
@@ -452,17 +518,21 @@ await analyzeArticle(text);
 ## Additional Resources
 
 ### FireFoundry Platform Documentation
+
 - [Platform Overview](./docs/README.md) - Architecture and concepts
 - [AgentSDK Getting Started](./docs/sdk/agent_sdk/agent_sdk_getting_started.md) - Building agent bundles
+- [Frontend Development Guide](./docs/sdk/ff_sdk/frontend_development_guide.md) - **Recommended for coding agents building frontends**
 - [FF SDK API Reference](./packages/ff-sdk/README.md) - Complete API documentation
 
 ### External Resources
+
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Express.js Guide](https://expressjs.com/en/guide/routing.html)
 - [WebSocket Documentation](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
 
 ### Community and Support
+
 - GitHub Issues: Report bugs and request features
 - Discussions: Ask questions and share examples
 - Examples Repository: Reference implementations
@@ -485,6 +555,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines.
 ## Tutorial Maintenance
 
 These tutorials are tested against:
+
 - **FF SDK**: v0.8.1+
 - **AgentSDK**: v0.6.0+
 - **Next.js**: v15.3.2+
@@ -499,6 +570,7 @@ Last updated: January 2025
 After completing these tutorials, you might want to explore:
 
 ### Advanced Topics
+
 - **Multi-agent Coordination**: Orchestrating multiple agent bundles
 - **Custom Streaming Protocols**: Implementing custom progress updates
 - **Advanced Caching Strategies**: Redis integration for performance
@@ -506,12 +578,14 @@ After completing these tutorials, you might want to explore:
 - **Security Hardening**: Authentication, authorization, and rate limiting
 
 ### Integration Patterns
+
 - **Mobile Apps**: React Native or Flutter integration
 - **Desktop Apps**: Electron or Tauri integration
 - **Serverless**: AWS Lambda or Cloudflare Workers
 - **Message Queues**: RabbitMQ or Kafka integration
 
 ### Scaling and Operations
+
 - **Load Balancing**: Distributing requests across agent bundles
 - **Auto-scaling**: Dynamic scaling based on demand
 - **Multi-region Deployment**: Geographic distribution
