@@ -267,6 +267,165 @@ BUNDLE_URL=http://localhost:8000/agents/ff-dev/your-bundle-name
 
 ---
 
+## Configuring values.local.yaml for Kubernetes Deployment
+
+When deploying your GUI to Kubernetes, you need to configure `values.local.yaml` in your GUI's directory (`apps/your-web-ui/values.local.yaml`). This file contains environment variables that will be injected into your deployed GUI pods.
+
+### Key Configuration Values
+
+Configure `values.local.yaml` with these values:
+
+```yaml
+configMap:
+  enabled: true
+  data:
+    # Use internal mode for entity client (direct K8s service access)
+    ENTITY_CLIENT_MODE: "internal"
+
+    # Agent Bundle URL - See discovery steps below
+    BUNDLE_URL: "http://<service-name>:3000" # or FQDN if cross-namespace
+
+    # Entity Service - Internal Kubernetes service
+    ENTITY_SERVICE_HOST: "http://firefoundry-core-entity-service.ff-dev.svc.cluster.local"
+    ENTITY_SERVICE_PORT: "8080"
+
+    # General configuration
+    NODE_ENV: "production"
+    WEBSITE_HOSTNAME: "dev"
+```
+
+### Discovering Agent Bundle Service Details
+
+**Step 1: Find the Agent Bundle Service Name**
+
+The agent bundle service name follows this pattern: `{bundle-name}-agent-bundle`
+
+```bash
+# List services in the agent bundle's namespace (typically ff-dev)
+kubectl get svc -n ff-dev | grep <bundle-name>
+
+# Example output:
+# NAME                          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)
+# math-word-solver-agent-bundle ClusterIP   10.96.xxx.xxx   <none>        3000/TCP
+```
+
+**Step 2: Determine Namespace Strategy**
+
+You need to know:
+
+- What namespace the agent bundle is deployed in (e.g., `ff-dev`)
+- What namespace the GUI will be deployed to (could be same or different)
+
+```bash
+# Check what namespace the agent bundle is in
+kubectl get svc <bundle-name>-agent-bundle --all-namespaces
+
+# Decide:
+# - Same namespace = simpler configuration (short DNS)
+# - Different namespace = requires FQDN
+```
+
+**Step 3: Configure BUNDLE_URL**
+
+**Option A: Same Namespace (Recommended for Local Development)**
+
+If GUI and agent bundle are in the same namespace (e.g., both in `ff-dev`):
+
+```yaml
+configMap:
+  data:
+    BUNDLE_URL: "http://{bundle-name}-agent-bundle:3000"
+```
+
+**Example:**
+
+```yaml
+BUNDLE_URL: "http://math-word-solver-agent-bundle:3000"
+```
+
+**Option B: Different Namespaces**
+
+If GUI is in a different namespace (e.g., GUI in `ff-apps`, agent bundle in `ff-dev`):
+
+```yaml
+configMap:
+  data:
+    BUNDLE_URL: "http://{bundle-name}-agent-bundle.{agent-bundle-namespace}.svc.cluster.local:3000"
+```
+
+**Example:**
+
+```yaml
+BUNDLE_URL: "http://math-word-solver-agent-bundle.ff-dev.svc.cluster.local:3000"
+```
+
+### Configuration Steps
+
+When configuring `values.local.yaml`, follow these steps:
+
+1. **Discover the agent bundle service:**
+
+   ```bash
+   kubectl get svc -n ff-dev | grep <bundle-name>
+   ```
+
+2. **Determine namespace strategy:**
+
+   - Check what namespace the agent bundle is in
+   - Decide what namespace to deploy the GUI to (same or different)
+   - If same namespace: use short DNS format
+   - If different namespace: use FQDN format
+
+3. **Set BUNDLE_URL accordingly:**
+
+   - **Same namespace**: `http://{bundle-name}-agent-bundle:3000`
+   - **Different namespace**: `http://{bundle-name}-agent-bundle.{namespace}.svc.cluster.local:3000`
+
+4. **Set other required values:**
+   - `ENTITY_CLIENT_MODE: "internal"` (for cluster-internal access)
+   - `ENTITY_SERVICE_HOST: "http://firefoundry-core-entity-service.ff-dev.svc.cluster.local"`
+   - `ENTITY_SERVICE_PORT: "8080"`
+   - `NODE_ENV: "production"`
+
+### Complete Example values.local.yaml
+
+**For Same Namespace Deployment:**
+
+```yaml
+configMap:
+  enabled: true
+  data:
+    ENTITY_CLIENT_MODE: "internal"
+    BUNDLE_URL: "http://math-word-solver-agent-bundle:3000"
+    ENTITY_SERVICE_HOST: "http://firefoundry-core-entity-service.ff-dev.svc.cluster.local"
+    ENTITY_SERVICE_PORT: "8080"
+    NODE_ENV: "production"
+    WEBSITE_HOSTNAME: "dev"
+```
+
+**For Cross-Namespace Deployment:**
+
+```yaml
+configMap:
+  enabled: true
+  data:
+    ENTITY_CLIENT_MODE: "internal"
+    BUNDLE_URL: "http://math-word-solver-agent-bundle.ff-dev.svc.cluster.local:3000"
+    ENTITY_SERVICE_HOST: "http://firefoundry-core-entity-service.ff-dev.svc.cluster.local"
+    ENTITY_SERVICE_PORT: "8080"
+    NODE_ENV: "production"
+    WEBSITE_HOSTNAME: "dev"
+```
+
+### Important Notes
+
+- **Service Name Pattern**: Always `{bundle-name}-agent-bundle` (Helm release name + `-agent-bundle`)
+- **Port**: Usually `3000` (verify with `kubectl get svc`)
+- **Namespace Discovery**: Use `kubectl get svc --all-namespaces` to find where the agent bundle is deployed
+- **Default Strategy**: For local development, deploying to the same namespace (`ff-dev`) is recommended for simplicity
+
+---
+
 ## Common Patterns
 
 ### Pattern 1: Creating Entities via Agent Bundle API
@@ -975,8 +1134,9 @@ This example demonstrates:
    - `RemoteAgentBundleClient` - For API endpoints and entity method invocations
    - `RemoteEntityClient` - For querying the entity graph
 4. **Configuration**: Support both external (Kong) and internal (K8s) modes via environment variables
-5. **Error Handling**: Always wrap client calls in try-catch and return structured errors
-6. **Pagination**: Entity client uses 1-indexed pages (page 1 = first page)
+5. **Kubernetes Deployment**: Configure `values.local.yaml` with proper `BUNDLE_URL` based on namespace discovery (see [Configuring values.local.yaml](#configuring-valueslocalyaml-for-kubernetes-deployment))
+6. **Error Handling**: Always wrap client calls in try-catch and return structured errors
+7. **Pagination**: Entity client uses 1-indexed pages (page 1 = first page)
 
 ### Quick Reference
 
