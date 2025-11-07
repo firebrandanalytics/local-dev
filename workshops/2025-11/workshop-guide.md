@@ -10,6 +10,8 @@ Before starting this workshop, ensure you have:
   - If you haven't completed this yet, follow the [Local Development Guide](../../docs/ff_local_dev/README.md)
 - ✅ **minikube running** - Your local Kubernetes cluster should be active
 - ✅ **ff-cli installed** - The FireFoundry CLI tool should be available in your PATH
+  - Download and install from: [ff-cli Releases](https://github.com/firebrandanalytics/ff-cli-releases/releases)
+  - Verify installation: `ff-cli --version`
 - ✅ **Configuration files** - You should have received `ff-dev-config.zip` with updated values files
 
 ## Part 1: Updating Your FireFoundry Installation
@@ -1538,6 +1540,9 @@ If `ff-cli project create` fails:
 ```bash
 # Verify ff-cli is installed
 ff-cli --version
+
+# If ff-cli is not installed, download from:
+# https://github.com/firebrandanalytics/ff-cli-releases/releases
 
 # Check GitHub token (required for private packages)
 echo $GITHUB_TOKEN
