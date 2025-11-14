@@ -51,6 +51,6 @@ kubectl get nodes
 
 With your environment configured, you're ready to:
 
-1. **[Deploy FireFoundry Services](04-deployment.md)** - Get the infrastructure running
-2. **[FireFoundry CLI Setup](05-ff-cli-setup.md)** - Install the CLI for agent development
-3. **[Start Agent Development](06-agent-development.md)** - Create your first agent bundle
+1. **[Deploy FireFoundry Services](../platform/deployment.md)** - Get the infrastructure running
+2. **[FireFoundry CLI Setup](./ff-cli-setup.md)** - Install the CLI for agent development
+3. **[Start Agent Development](./agent-development.md)** - Create your first agent bundle

@@ -6,9 +6,9 @@ The FireFoundry CLI (`ff-cli`) is essential for creating and managing agent proj
 
 Before setting up the FireFoundry CLI, ensure you have completed:
 
-1. **[Prerequisites](01-prerequisites.md)** - Core tools installed
-2. **[Environment Setup](03-environment-setup.md)** - minikube cluster running
-3. **[Deploy Services](04-deployment.md)** - FireFoundry infrastructure deployed
+1. **[Prerequisites](../getting-started/prerequisites.md)** - Core tools installed
+2. **[Environment Setup](./environment-setup.md)** - minikube cluster running
+3. **[Deploy Services](../platform/deployment.md)** - FireFoundry infrastructure deployed
 
 ## Step 1: Obtain a GitHub Token
 
@@ -106,9 +106,9 @@ The `ff-cli` tool provides:
 
 With the FireFoundry CLI installed, you're ready to start agent development:
 
-1. **[Agent Development](06-agent-development.md)** - Create your first agent bundle
-2. **[Operations & Maintenance](07-operations.md)** - Monitor and debug your agents
-3. **[Troubleshooting](09-troubleshooting.md)** - Common issues and solutions
+1. **[Agent Development](./agent-development.md)** - Create your first agent bundle
+2. **[Operations & Maintenance](../platform/operations.md)** - Monitor and debug your agents
+3. **[Troubleshooting](./troubleshooting.md)** - Common issues and solutions
 
 ## Troubleshooting
 

@@ -58,5 +58,5 @@ This separation allows you to:
 
 Now that you understand the architecture, you can:
 
-1. **[Set up your Environment](03-environment-setup.md)** - Configure your local development environment
-2. **[Deploy FireFoundry Services](04-deployment.md)** - Get the infrastructure running
+1. **[Set up your Environment](../local-development/environment-setup.md)** - Configure your local development environment
+2. **[Deploy FireFoundry Services](./deployment.md)** - Get the infrastructure running

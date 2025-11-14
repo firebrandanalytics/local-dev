@@ -207,6 +207,6 @@ kubectl logs <pod-name> -n ff-dev
 
 With FireFoundry deployed, you're ready to:
 
-1. **[FireFoundry CLI Setup](05-ff-cli-setup.md)** - Install the CLI for agent development
-2. **[Start Agent Development](06-agent-development.md)** - Create your first agent bundle
-3. **[Learn Operations](07-operations.md)** - Monitor and maintain your deployment
+1. **[FireFoundry CLI Setup](../local-development/ff-cli-setup.md)** - Install the CLI for agent development
+2. **[Start Agent Development](../local-development/agent-development.md)** - Create your first agent bundle
+3. **[Learn Operations](./operations.md)** - Monitor and maintain your deployment

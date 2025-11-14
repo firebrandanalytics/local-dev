@@ -43,13 +43,13 @@ These tutorials walk you through building a complete end-to-end application usin
 
 **Prerequisites:**
 
-- Understanding of the [FireFoundry Platform](./docs/README.md)
-- Completed the [AgentSDK Getting Started Guide](./docs/sdk/agent_sdk/agent_sdk_getting_started.md)
+- Understanding of the [FireFoundry Platform](../../README.md)
+- Completed the [AgentSDK Getting Started Guide](../agent_sdk/agent_sdk_getting_started.md)
 - News Analysis Agent Bundle deployed (locally or staging)
 
 ### 📚 Tutorial Index
 
-#### 1. [FF SDK Tutorial: Getting Started](./docs/sdk/ff_sdk/ff_sdk_getting_started.md)
+#### 1. [FF SDK Tutorial: Getting Started](./ff_sdk_tutorial.md)
 
 **What you'll learn:**
 
@@ -85,7 +85,7 @@ const result = await client.invoke_entity_method(
 
 ---
 
-#### 2. [Consuming the News Analysis Agent Bundle](./docs/sdk/ff_sdk/news_analysis_consumer.md)
+#### 2. [Consuming the News Analysis Agent Bundle](./news_analysis_consumer.md)
 
 **What you'll learn:**
 
@@ -114,7 +114,7 @@ npm start history -l 10
 
 ---
 
-#### 3. [Express.js Middleware with WebSocket Streaming](./docs/sdk/ff_sdk/express_middleware_tutorial.md)
+#### 3. [Express.js Middleware with WebSocket Streaming](./express_middleware_tutorial.md)
 
 **What you'll learn:**
 
@@ -153,7 +153,7 @@ ws.on("message", async (data) => {
 
 ---
 
-#### 4. [Next.js GUI for News Analysis](./docs/sdk/ff_sdk/nextjs_news_analysis_gui.md)
+#### 4. [Next.js GUI for News Analysis](./nextjs_news_analysis_gui.md)
 
 **What you'll learn:**
 
@@ -181,7 +181,7 @@ const result = await analyzeArticle({
 
 ---
 
-#### 5. [Frontend Development Guide for Agent Bundles](./docs/sdk/ff_sdk/frontend_development_guide.md) ⭐ **NEW**
+#### 5. [Frontend Development Guide for Agent Bundles](./frontend_development_guide.md) ⭐ **NEW**
 
 **What you'll learn:**
 
@@ -345,7 +345,7 @@ mkdir -p packages/{agent-bundle,shared-types,cli-tool,api,web-ui}
 
 ### 2. Add Agent Bundle
 
-Follow the [AgentSDK Getting Started Guide](./docs/sdk/agent_sdk/agent_sdk_getting_started.md) to build the News Analysis agent bundle.
+Follow the [AgentSDK Getting Started Guide](../agent_sdk/agent_sdk_getting_started.md) to build the News Analysis agent bundle.
 
 ### 3. Add Shared Types
 
@@ -519,9 +519,9 @@ await analyzeArticle(text);
 
 ### FireFoundry Platform Documentation
 
-- [Platform Overview](./docs/README.md) - Architecture and concepts
-- [AgentSDK Getting Started](./docs/sdk/agent_sdk/agent_sdk_getting_started.md) - Building agent bundles
-- [Frontend Development Guide](./docs/sdk/ff_sdk/frontend_development_guide.md) - **Recommended for coding agents building frontends**
+- [Platform Overview](../../README.md) - Architecture and concepts
+- [AgentSDK Getting Started](../agent_sdk/agent_sdk_getting_started.md) - Building agent bundles
+- [Frontend Development Guide](./frontend_development_guide.md) - **Recommended for coding agents building frontends**
 - [FF SDK API Reference](./packages/ff-sdk/README.md) - Complete API documentation
 
 ### External Resources

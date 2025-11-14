@@ -6,10 +6,10 @@ This guide walks you through deploying and testing the **talespring** example ag
 
 Before starting, ensure you've completed:
 
-1. **[Prerequisites](01-prerequisites.md)** - Core tools installed
-2. **[Environment Setup](03-environment-setup.md)** - minikube cluster running
-3. **[Deploy Services](04-deployment.md)** - Control plane and core services deployed
-4. **[FF CLI Setup](05-ff-cli-setup.md)** - FireFoundry CLI installed
+1. **[Prerequisites](../getting-started/prerequisites.md)** - Core tools installed
+2. **[Environment Setup](./environment-setup.md)** - minikube cluster running
+3. **[Deploy Services](../platform/deployment.md)** - Control plane and core services deployed
+4. **[FF CLI Setup](./ff-cli-setup.md)** - FireFoundry CLI installed
 
 ## Step 1: Create Project with Talespring Example
 
@@ -64,7 +64,7 @@ docker build \
   .
 ```
 
-**Note**: The `GITHUB_TOKEN` build arg is required to access private FireFoundry packages during the build. This uses the token you configured in [FF CLI Setup](05-ff-cli-setup.md).
+**Note**: The `GITHUB_TOKEN` build arg is required to access private FireFoundry packages during the build. This uses the token you configured in [FF CLI Setup](./ff-cli-setup.md).
 
 Verify the image was built:
 
@@ -379,15 +379,15 @@ You've successfully:
 
 **Next Steps**:
 
-- **[Update Agent Bundles](08-updating-agent-bundles.md)** - Make changes and redeploy
+- **[Update Agent Bundles](./updating-agent-bundles.md)** - Make changes and redeploy
 - Explore the talespring source code in `apps/talespring/src/` to understand Entity-Bot-Prompt patterns
 - Review entity definitions, bot implementations, and prompt composition
 - Try creating your own agent bundle: `ff-cli agent-bundle create my-service`
-- Learn about monitoring and operations: **[Operations Guide](07-operations.md)**
+- Learn about monitoring and operations: **[Operations Guide](../platform/operations.md)**
 
 ## Additional Resources
 
 - **Entity-Bot-Prompt Architecture**: See `~/dev/CLAUDE.md` for framework overview
 - **Agent SDK Documentation**: Available in generated project's README
 - **Example Agents**: Use `ff-cli examples list` to discover more examples
-- **Troubleshooting Guide**: **[Troubleshooting](09-troubleshooting.md)** for common issues
+- **Troubleshooting Guide**: **[Troubleshooting](./troubleshooting.md)** for common issues

@@ -4,7 +4,7 @@ After making changes to your agent bundle code, you need to rebuild and redeploy
 
 ## Prerequisites
 
-- Agent bundle already deployed (see [Deploying Talespring](06-agent-development.md))
+- Agent bundle already deployed (see [Deploying Talespring](./agent-development.md))
 - Code changes made in your project directory
 - minikube cluster running with port-forward to Kong proxy
 
@@ -314,8 +314,8 @@ kubectl rollout restart deployment/notification-service-agent-bundle -n ff-dev
 
 Now that you can update agent bundles, explore:
 
-- **[Operations & Maintenance](07-operations.md)** - Monitor and maintain your deployments
-- **[Troubleshooting](09-troubleshooting.md)** - Solve common issues
+- **[Operations & Maintenance](../platform/operations.md)** - Monitor and maintain your deployments
+- **[Troubleshooting](./troubleshooting.md)** - Solve common issues
 - **Agent SDK Documentation** - Learn advanced patterns and features
 
 ## Summary

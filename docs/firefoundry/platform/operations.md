@@ -130,4 +130,4 @@ helm upgrade firefoundry-control . -f ff-control-backup.yaml -n ff-control-plane
 
 For troubleshooting specific issues, see:
 
-1. **[Troubleshooting Guide](09-troubleshooting.md)** - Common issues and solutions
+1. **[Troubleshooting Guide](../local-development/troubleshooting.md)** - Common issues and solutions

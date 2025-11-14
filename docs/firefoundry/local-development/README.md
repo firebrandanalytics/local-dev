@@ -6,17 +6,17 @@ Welcome to the FireFoundry local development documentation! This guide will walk
 
 If you're new to FireFoundry, follow these guides in order:
 
-1. **[Prerequisites](01-prerequisites.md)** - Install tools and set up GitHub token
-2. **[Architecture Overview](02-architecture.md)** - Understand the system design
-3. **[Environment Setup](03-environment-setup.md)** - Configure your local development environment
-4. **[Deploy Services](04-deployment.md)** - Deploy FireFoundry infrastructure
-5. **[FireFoundry CLI Setup](05-ff-cli-setup.md)** - Install the CLI for agent development (requires GitHub token)
-6. **[Agent Development](06-agent-development.md)** - Create your first agent bundle
+1. **[Prerequisites](../getting-started/prerequisites.md)** - Install tools and set up GitHub token
+2. **[Architecture Overview](../platform/architecture.md)** - Understand the system design
+3. **[Environment Setup](./environment-setup.md)** - Configure your local development environment
+4. **[Deploy Services](../platform/deployment.md)** - Deploy FireFoundry infrastructure
+5. **[FireFoundry CLI Setup](./ff-cli-setup.md)** - Install the CLI for agent development (requires GitHub token)
+6. **[Agent Development](./agent-development.md)** - Create your first agent bundle
 
 ## Reference Guides
 
-- **[Operations & Maintenance](07-operations.md)** - Monitoring, debugging, and updates
-- **[Troubleshooting](09-troubleshooting.md)** - Common issues and solutions
+- **[Operations & Maintenance](../platform/operations.md)** - Monitoring, debugging, and updates
+- **[Troubleshooting](./troubleshooting.md)** - Common issues and solutions
 
 ## What is FireFoundry?
 
@@ -38,7 +38,6 @@ FireFoundry is a comprehensive platform for building and deploying AI agents tha
 - **Support**: Reach out to the FireFoundry platform team for infrastructure issues:
   - **Doug**: doug@firebrand.ai
   - **Augustus**: augustus@firebrand.ai
-  - **Jose**: jose@firebrand.ai
 
 ---
 

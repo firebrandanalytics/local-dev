@@ -16,8 +16,8 @@ FireFoundry is a batteries-included platform that combines opinionated runtime s
 
 - [FireFoundry Documentation](./firefoundry/README.md)
 - [Getting Started with FireFoundry](./firefoundry/getting-started/README.md)
-- [AgentSDK](./firefoundry/sdk/agent-sdk/README.md)
-- [FF SDK](./firefoundry/sdk/ff-sdk/README.md)
+- [AgentSDK](./firefoundry/sdk/agent_sdk/README.md)
+- [FF SDK](./firefoundry/sdk/ff_sdk/README.md)
 
 **Key Features:**
 - Zero-code persistence via entity graph
@@ -73,8 +73,8 @@ docs/
 │   ├── platform/         # Architecture and operations
 │   ├── local-development/ # Local development setup
 │   └── sdk/              # SDK documentation
-│       ├── agent-sdk/    # Agent development SDK
-│       ├── ff-sdk/       # Consumer integration SDK
+│       ├── agent_sdk/    # Agent development SDK
+│       ├── ff_sdk/       # Consumer integration SDK
 │       └── utils/        # Utility libraries
 │
 └── fireiq/               # FireIQ Suite documentation

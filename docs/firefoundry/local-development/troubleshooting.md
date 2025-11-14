@@ -25,7 +25,7 @@ docker pull firebranddevet.azurecr.io/ff-broker:latest
 kubectl delete secret myregistrycreds -n ff-dev
 kubectl delete secret myregistrycreds -n ff-control-plane
 
-# Follow registry setup steps again from [Deployment Guide](04-deployment.md)
+# Follow registry setup steps again from [Deployment Guide](../platform/deployment.md)
 ```
 
 ## Pod Startup Issues
@@ -165,7 +165,7 @@ echo $GITHUB_TOKEN
 curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/user
 
 # Recreate token with correct scopes
-# See [Prerequisites Guide](01-prerequisites.md) for detailed steps
+# See [Prerequisites Guide](../getting-started/prerequisites.md) for detailed steps
 ```
 
 ## Performance Issues
