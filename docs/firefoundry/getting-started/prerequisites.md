@@ -32,8 +32,8 @@ See the comprehensive [Local Development Prerequisites](../local-development/env
 
 - Docker Desktop or similar
 - Minikube
-- Node.js (version TBD)
-- ff-cli
+- Node.js (version 23.x)
+- ff-cli ([releases](https://github.com/firebrandanalytics/ff-cli-releases))
 
 ### System Requirements
 
@@ -52,5 +52,6 @@ _[To be documented]_
 ## Next Steps
 
 Once prerequisites are met:
+
 - **Cloud Deployment**: See [Deployment Guide](../platform/deployment.md)
 - **Local Development**: See [Environment Setup](../local-development/environment-setup.md)

@@ -1,58 +1,40 @@
 # Deploying FireFoundry Services
 
-Deploy the complete FireFoundry infrastructure for local development using published Helm charts.
+Deploy the FireFoundry Control Plane for local development. Once the control plane is running, you'll use the FireFoundry CLI to create environments for your AI services.
 
-## Step 0: Download Configuration Files
+## Overview
 
-You'll receive a configuration package (`ff-dev-config.zip`) containing the necessary values and secrets files. Extract this package to your working directory:
+FireFoundry uses a **two-tier architecture**:
+
+1. **Control Plane** (one-time setup) - Infrastructure services: Kong Gateway, Flux, Helm API, FF Console
+2. **Environments** (managed via CLI) - Your AI services: FF Broker, Context Service, Code Sandbox
+
+This guide covers deploying the Control Plane. Environment creation is handled by the `ff-cli` tool.
+
+## Step 1: Clone the Configuration Repository
+
+Clone the FireFoundry local development repository:
 
 ```bash
-# Extract the configuration package
-unzip ff-dev-config.zip
-cd ff-dev-config
-
-# You should now have these files:
-# - core-values.yaml          (Core services configuration)
-# - control-plane-values.yaml (Control plane configuration)
-# - secrets.yaml              (API keys and credentials)
+git clone https://github.com/firebrandanalytics/firefoundry-local.git
+cd firefoundry-local
 ```
 
-**What's included:**
+**Repository contents:**
 
-- **core-values.yaml**: Configuration for FF Broker, Context Service, and Code Sandbox
-- **control-plane-values.yaml**: Configuration for PostgreSQL, Concourse, Harbor, and FF Console
-- **secrets.yaml**: Pre-configured API keys, database credentials, and service tokens
+- `control-plane/values.yaml` - Control plane configuration
+- `control-plane/secrets.template.yaml` - Template for secrets
+- `scripts/deploy-control-plane.sh` - Deployment script
 
-**Important**: All deployment commands in this guide assume you're working from the directory containing these configuration files.
+## Step 2: Create Namespace and Registry Access
 
-## Step 1: Create Namespaces
-
-FireFoundry uses two separate namespaces for clear separation of concerns. Create them first before setting up any services:
+FireFoundry uses a private Azure Container Registry. You must authenticate to prove you have access.
 
 ```bash
-# Create the core runtime services namespace
-kubectl create namespace ff-dev
-
-# Create the control plane services namespace
+# Create the control plane namespace
 kubectl create namespace ff-control-plane
 
-# Verify namespaces were created
-kubectl get namespaces | grep ff-
-```
-
-**Why separate namespaces?**
-
-- **ff-dev**: Contains core AI services (FF Broker, Context Service, Code Sandbox)
-- **ff-control-plane**: Contains infrastructure services (PostgreSQL, Concourse, Harbor, FF Console)
-- **Isolation**: Separate resource management, security policies, and monitoring
-- **Organization**: Clear separation makes troubleshooting and maintenance easier
-
-## Step 2: Container Registry Access
-
-FireFoundry uses a private Azure Container Registry for security and control. Here's how to set it up:
-
-```bash
-# Authenticate with Azure
+# Authenticate with Azure (requires Firebrand Azure account)
 az login
 
 # Switch to the correct subscription
@@ -61,13 +43,7 @@ az account set --subscription "Firebrand R&D"
 # Retrieve the registry password
 export ACR_PASSWORD=$(az acr credential show --name firebranddevet --query "passwords[0].value" -o tsv)
 
-# Create Kubernetes secrets for both namespaces
-kubectl create secret docker-registry myregistrycreds \
-  --docker-server=firebranddevet.azurecr.io \
-  --docker-username=firebranddevet \
-  --docker-password="$ACR_PASSWORD" \
-  --namespace=ff-dev
-
+# Create the registry secret
 kubectl create secret docker-registry myregistrycreds \
   --docker-server=firebranddevet.azurecr.io \
   --docker-username=firebranddevet \
@@ -75,138 +51,196 @@ kubectl create secret docker-registry myregistrycreds \
   --namespace=ff-control-plane
 ```
 
-**Why private registry?** Public registries pose security risks for enterprise AI applications. Private registries provide:
+**Why this step?** This verifies you have authorized access to Firebrand's Azure resources before pulling container images.
 
-- **Access control**: Only authorized developers can pull/push images
-- **Security scanning**: Automated vulnerability detection in container images
-- **Compliance**: Meets enterprise security requirements for AI workloads
+## Step 3: Configure Secrets
 
-## Step 3: Add FireFoundry Helm Repository
-
-Add the published FireFoundry charts to your Helm repositories:
+Copy the secrets template and fill in the required values:
 
 ```bash
-# Add the FireFoundry Helm repository
-helm repo add firebrandanalytics https://firebrandanalytics.github.io/ff_infra
-helm repo update
-
-# Verify the charts are available
-helm search repo firebrandanalytics
+cp control-plane/secrets.template.yaml control-plane/secrets.yaml
 ```
 
-**Available charts:**
+Edit `control-plane/secrets.yaml` with the values provided by the FireFoundry platform team:
 
-- **firefoundry-control-plane**: Infrastructure services (PostgreSQL, Concourse, Harbor, FF Console)
-- **firefoundry-core**: Core AI services (FF Broker, Context Service, Code Sandbox)
-
-## Step 4: Deploy FireFoundry Services
-
-Deploy both the control plane and core services using the published charts. For local development, you'll need both to get the complete FireFoundry experience.
-
-### Deploy Control Plane Services
-
-First, deploy the infrastructure services (PostgreSQL, Concourse, Harbor, FF Console):
-
-```bash
-# Deploy control plane services
-helm install firefoundry-control firebrandanalytics/firefoundry-control-plane \
-  -f control-plane-values.yaml \
-  -f secrets.yaml \
-  --namespace ff-control-plane
+```yaml
+ff-console:
+  secret:
+    data:
+      PG_PASSWORD: ""           # Database password
+      OPENID_SECRET: ""         # Azure AD client secret
+      WORKING_MEMORY_STORAGE_KEY: ""  # Azure Storage key
+      APPLICATIONINSIGHTS_CONNECTION_STRING: ""  # Optional
 ```
 
-### Deploy Core Services
+Contact Firebrand Support if you need these credentials.
 
-Next, deploy the core AI services (FF Broker, Context Service, Code Sandbox):
+## Step 4: Deploy the Control Plane
+
+Run the deployment script:
 
 ```bash
-# Deploy core runtime services
-helm install firefoundry-core firebrandanalytics/firefoundry-core \
-  -f core-values.yaml \
-  -f secrets.yaml \
-  --namespace ff-dev
+./scripts/deploy-control-plane.sh
 ```
 
-**Why both?** Local development benefits from:
+The script will:
+- Install Flux CRDs (required for environment management)
+- Add the FireFoundry Helm repository
+- Deploy the control plane services
 
-- **Core services**: Enable agent development, testing, and execution
-- **Control plane**: Provides CI/CD pipelines, container registry, and monitoring tools
-- **Full integration**: Test the complete agent lifecycle from development to deployment
-
-## Step 5: Verification and Health Checks
-
-Wait for all services to start up (this may take 2-3 minutes), then verify your deployment:
+**Options:**
 
 ```bash
-# Check that all pods are running
-kubectl get pods -n ff-dev
+# Deploy specific chart version
+./scripts/deploy-control-plane.sh -v 0.2.0
+
+# Preview without deploying
+./scripts/deploy-control-plane.sh --dry-run
+
+# Skip CRD installation (if already installed)
+./scripts/deploy-control-plane.sh --skip-crds
+```
+
+## Step 5: Verify Deployment
+
+Wait 2-3 minutes for services to start, then verify:
+
+```bash
+# Check all pods are running
 kubectl get pods -n ff-control-plane
 
-# Verify core services are healthy
-kubectl logs -n ff-dev deployment/ff-broker
-kubectl logs -n ff-dev deployment/context-service
-kubectl logs -n ff-dev deployment/code-sandbox
-
-# Test FF Broker connectivity (gRPC service)
-kubectl -n ff-dev port-forward svc/ff-broker 50061:50061 &
-curl -v localhost:50061  # Should connect to gRPC endpoint
-
-# Access FF Console for monitoring (if control plane is deployed)
-kubectl -n ff-control-plane port-forward svc/ff-console 3001:3001 &
-# Open http://localhost:3001 in your browser
+# Expected pods:
+# - ff-control-plane-postgresql-*
+# - firefoundry-control-*-kong-*
+# - firefoundry-control-*-flux-helm-controller-*
+# - firefoundry-control-*-flux-source-controller-*
+# - firefoundry-control-*-helm-api-*
+# - firefoundry-control-*-ff-console-*
 ```
 
-**Expected results:**
+**Access Kong Gateway:**
 
-- All pods should show `Running` status
-- FF Broker should accept gRPC connections on port 50061
-- FF Console should be accessible at http://localhost:3001
-- Service logs should show successful startup without critical errors
+For minikube:
+```bash
+minikube service firefoundry-control-firefoundry-control-plane-kong-proxy -n ff-control-plane --url
+```
 
-## Troubleshooting Common Issues
+For k3d:
+```bash
+# Kong is available at http://localhost:8080 (if using the recommended k3d config)
+curl http://localhost:8080/health
+```
+
+## Step 6: Install the FireFoundry CLI
+
+Download and install the FireFoundry CLI from the releases page:
+
+[FireFoundry CLI Releases](https://github.com/firebrandanalytics/ff-cli-releases)
+
+**macOS/Linux:**
+```bash
+# Download the appropriate binary for your platform
+# Make it executable and move to your PATH
+chmod +x ff-cli
+sudo mv ff-cli /usr/local/bin/
+```
+
+Verify installation:
+```bash
+ff-cli --version
+```
+
+## Step 7: Download the Internal Template
+
+Firebrand employees can download the pre-configured internal template:
+
+```bash
+# You should already be logged in from Step 2, but verify:
+az account show
+
+# Download the internal template
+curl -fsSL https://raw.githubusercontent.com/firebrandanalytics/firefoundry-local/main/scripts/setup-ff-template.sh | bash
+```
+
+This creates `~/.ff/environments/templates/internal.json` with database credentials, API keys, and service configuration for internal development.
+
+## Step 8: Create Your First Environment
+
+With the control plane running and template installed, create an environment for your AI services:
+
+```bash
+# Create a new environment using the internal template
+ff-cli environment create --template internal --name my-env
+
+# List environments
+ff-cli environment list
+
+# Check environment status
+ff-cli environment status my-env
+```
+
+The environment will deploy:
+- **FF Broker** - LLM orchestration service
+- **Context Service** - Working memory management
+- **Code Sandbox** - Secure code execution
+
+## Troubleshooting
 
 ### Pods Stuck in ImagePullBackOff
 
-If pods can't pull container images:
+Registry credentials are missing or incorrect:
 
 ```bash
-# Check registry credentials
-kubectl get secret myregistrycreds -n ff-dev
+# Verify the secret exists
 kubectl get secret myregistrycreds -n ff-control-plane
 
-# If missing, recreate the registry secrets (see Step 1)
+# If missing, recreate it (see Step 2)
 ```
 
 ### Pods Stuck in Pending
 
-If pods can't be scheduled:
+Insufficient cluster resources:
 
 ```bash
-# Check available resources
+# Check node resources
 kubectl describe nodes
-kubectl top nodes
 
-# Consider restarting minikube with more resources
+# For minikube, restart with more resources
 minikube stop
-minikube start --memory=8192 --cpus=4 --disk-size=20g
+minikube start --memory=8192 --cpus=4
 ```
 
-### Services Not Starting
+### Deployment Script Fails
 
-If services fail to start:
+Check prerequisites:
 
 ```bash
-# Check pod events and logs
-kubectl describe pod <pod-name> -n ff-dev
-kubectl logs <pod-name> -n ff-dev
+# Verify kubectl is connected
+kubectl cluster-info
 
-# Common issues: missing secrets, database connectivity, resource limits
+# Verify Helm is installed
+helm version
+
+# Check script output for specific errors
+./scripts/deploy-control-plane.sh --debug
+```
+
+### Environment Creation Fails
+
+Verify the control plane is healthy:
+
+```bash
+# Check Helm API is running
+kubectl get pods -n ff-control-plane | grep helm-api
+
+# Check Flux controllers
+kubectl get pods -n ff-control-plane | grep flux
 ```
 
 ## Next Steps
 
 With FireFoundry deployed, you're ready to:
 
-1. **[FireFoundry CLI Setup](../local-development/ff-cli-setup.md)** - Install the CLI for agent development
-2. **[Start Agent Development](../local-development/agent-development.md)** - Create your first agent bundle
-3. **[Learn Operations](./operations.md)** - Monitor and maintain your deployment
+1. **[Start Agent Development](../local-development/agent-development.md)** - Create your first agent bundle
+2. **[Learn Operations](./operations.md)** - Monitor and maintain your deployment
+3. **[Troubleshooting Guide](../local-development/troubleshooting.md)** - Common issues and solutions

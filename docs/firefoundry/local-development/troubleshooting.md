@@ -215,10 +215,7 @@ kubectl logs deployment/firefoundry-context-service -n ff-dev > context-service.
 - **Documentation**: Check the Agent SDK docs included in generated projects
 - **Logs**: Always check pod logs first when troubleshooting
 - **Community**: Internal Teams channels and team knowledge sharing
-- **Support**: Reach out to the FireFoundry platform team for infrastructure issues:
-  - **Doug**: doug@firebrand.ai
-  - **Augustus**: augustus@firebrand.ai
-  - **Jose**: jose@firebrand.ai
+- **Support**: Contact Firebrand Support for infrastructure issues
 
 ## Prevention Tips
 
