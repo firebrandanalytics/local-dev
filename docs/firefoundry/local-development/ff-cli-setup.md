@@ -66,6 +66,42 @@ kubectl config current-context
 # Should point to your local cluster (minikube, k3d, etc.)
 ```
 
+## Create a Profile
+
+Profiles store your CLI configuration - which cluster to target, registry settings, and defaults for environment creation.
+
+Create your first profile for local development:
+
+```bash
+ff-cli profile create local
+```
+
+When prompted:
+1. **Configure registry settings?** Select **No** (or choose **Minikube** if you plan to build images)
+2. **Configure kubectl context?** Select **Yes**, then choose **minikube** from the list
+3. **Set as current profile?** Select **Yes**
+
+You can verify your profile:
+
+```bash
+# List all profiles
+ff-cli profile list
+
+# Show current profile details
+ff-cli profile show
+```
+
+### Profile Commands Reference
+
+| Command | Description |
+|---------|-------------|
+| `ff-cli profile list` | List all profiles |
+| `ff-cli profile show [name]` | Show profile details |
+| `ff-cli profile create [name]` | Create a new profile |
+| `ff-cli profile select [name]` | Switch to a different profile |
+| `ff-cli profile edit [name]` | Edit an existing profile |
+| `ff-cli profile delete <name>` | Delete a profile |
+
 ## Template Setup (Firebrand Employees)
 
 The `ff-cli` uses templates to configure environments. Firebrand employees can download the internal template automatically:

@@ -150,7 +150,25 @@ Verify installation:
 ff-cli --version
 ```
 
-## Step 7: Download the Internal Template
+## Step 7: Create a Profile
+
+Create a CLI profile for your local minikube cluster:
+
+```bash
+ff-cli profile create local
+```
+
+When prompted:
+1. **Configure registry settings?** Select **No** (or choose **Minikube** if you plan to build images)
+2. **Configure kubectl context?** Select **Yes**, then choose **minikube**
+3. **Set as current profile?** Select **Yes**
+
+Verify your profile:
+```bash
+ff-cli profile list
+```
+
+## Step 8: Download the Internal Template
 
 Firebrand employees can download the pre-configured internal template:
 
@@ -164,7 +182,7 @@ curl -fsSL https://raw.githubusercontent.com/firebrandanalytics/firefoundry-loca
 
 This creates `~/.ff/environments/templates/internal.json` with database credentials, API keys, and service configuration for internal development.
 
-## Step 8: Create Your First Environment
+## Step 9: Create Your First Environment
 
 With the control plane running and template installed, create an environment for your AI services:
 
