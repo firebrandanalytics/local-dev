@@ -67,10 +67,10 @@ Edit `control-plane/secrets.yaml` with the values provided by the FireFoundry pl
 ff-console:
   secret:
     data:
-      PG_PASSWORD: ""           # Database password
-      OPENID_SECRET: ""         # Azure AD client secret
-      WORKING_MEMORY_STORAGE_KEY: ""  # Azure Storage key
-      APPLICATIONINSIGHTS_CONNECTION_STRING: ""  # Optional
+      PG_PASSWORD: "" # Database password
+      OPENID_SECRET: "" # Azure AD client secret
+      WORKING_MEMORY_STORAGE_KEY: "" # Azure Storage key
+      APPLICATIONINSIGHTS_CONNECTION_STRING: "" # Optional
 ```
 
 Contact Firebrand Support if you need these credentials.
@@ -84,6 +84,7 @@ Run the deployment script:
 ```
 
 The script will:
+
 - Install Flux CRDs (required for environment management)
 - Add the FireFoundry Helm repository
 - Deploy the control plane services
@@ -118,18 +119,15 @@ kubectl get pods -n ff-control-plane
 # - firefoundry-control-*-ff-console-*
 ```
 
-**Access Kong Gateway:**
+**Access Kong Gateway (optional):**
 
-For minikube:
+If you need to access services through the Kong Gateway, use port forwarding:
+
 ```bash
-minikube service firefoundry-control-firefoundry-control-plane-kong-proxy -n ff-control-plane --url
+kubectl port-forward svc/firefoundry-control-firefoundry-control-plane-kong-proxy -n ff-control-plane 8000:8000
 ```
 
-For k3d:
-```bash
-# Kong is available at http://localhost:8080 (if using the recommended k3d config)
-curl http://localhost:8080/health
-```
+The gateway will be available at `http://localhost:8080`.
 
 ## Step 6: Install the FireFoundry CLI
 
@@ -138,6 +136,7 @@ Download and install the FireFoundry CLI from the releases page:
 [FireFoundry CLI Releases](https://github.com/firebrandanalytics/ff-cli-releases)
 
 **macOS/Linux:**
+
 ```bash
 # Download the appropriate binary for your platform
 # Make it executable and move to your PATH
@@ -146,6 +145,7 @@ sudo mv ff-cli /usr/local/bin/
 ```
 
 Verify installation:
+
 ```bash
 ff-cli --version
 ```
@@ -159,11 +159,13 @@ ff-cli profile create local
 ```
 
 When prompted:
+
 1. **Configure registry settings?** Select **No** (or choose **Minikube** if you plan to build images)
 2. **Configure kubectl context?** Select **Yes**, then choose **minikube**
 3. **Set as current profile?** Select **Yes**
 
 Verify your profile:
+
 ```bash
 ff-cli profile list
 ```
@@ -198,6 +200,7 @@ ff-cli environment status my-env
 ```
 
 The environment will deploy:
+
 - **FF Broker** - LLM orchestration service
 - **Context Service** - Working memory management
 - **Code Sandbox** - Secure code execution
